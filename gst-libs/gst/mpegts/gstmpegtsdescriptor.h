@@ -343,6 +343,96 @@ gboolean  gst_mpegts_descriptor_parse_ibp (const GstMpegtsDescriptor *descriptor
                       gboolean  *identical_gop,
                       guint16   *max_gop_length);
 
+/* GST_MTS_DESC_CONTENT_LABELING (0x24) */
+/**
+ * GstMpegtsContentLabelingDescriptor:
+ * @application_format :
+ * @application_format_identifier :
+ *
+ * Mpeg-TS content labeling descriptor (ISO/IEC 13818-1).
+ */
+typedef struct _GstMpegtsContentLabelingDescriptor GstMpegtsContentLabelingDescriptor;
+struct _GstMpegtsContentLabelingDescriptor
+{
+    guint16     application_format;
+    guint32     application_format_identifier;
+};
+void gst_mpegts_content_labeling_descriptor_free (GstMpegtsContentLabelingDescriptor * desc);
+
+gboolean  gst_mpegts_descriptor_parse_content_labeling (const GstMpegtsDescriptor *descriptor,
+                      GstMpegtsContentLabelingDescriptor **res);
+
+/* GST_MTS_DESC_METADATA_POINTER (0x25) */
+/**
+ * GstMpegtsMetadataPointerDescriptor:
+ * @application_format :
+ * @application_format_identifier :
+ * @format :
+ * @format_identifier :
+ * @service_id :
+ *
+ * Mpeg-TS metadata pointer descriptor (ISO/IEC 13818-1).
+ */
+typedef struct _GstMpegtsMetadataPointerDescriptor GstMpegtsMetadataPointerDescriptor;
+struct _GstMpegtsMetadataPointerDescriptor
+{
+    guint16     application_format;
+    guint32     application_format_identifier;
+    guint8      format;
+    guint32     format_identifier;
+    guint8      service_id;
+};
+void gst_mpegts_metadata_pointer_descriptor_free (GstMpegtsMetadataPointerDescriptor * desc);
+
+gboolean  gst_mpegts_descriptor_metadata_pointer (const GstMpegtsDescriptor *descriptor,
+        GstMpegtsMetadataPointerDescriptor **res);
+
+/* GST_MTS_DESC_METADATA (0x26) */
+/**
+ * GstMpegtsMetadataDescriptor:
+ * @application_format :
+ * @application_format_identifier :
+ * @format :
+ * @format_identifier :
+ * @service_id :
+ *
+ * Mpeg-TS metadata descriptor (ISO/IEC 13818-1).
+ */
+typedef struct _GstMpegtsMetadataDescriptor GstMpegtsMetadataDescriptor;
+struct _GstMpegtsMetadataDescriptor
+{
+    guint16     application_format;
+    guint32     application_format_identifier;
+    guint8      format;
+    guint32     format_identifier;
+    guint8      service_id;
+};
+void gst_mpegts_metadata_descriptor_free (GstMpegtsMetadataDescriptor * desc);
+
+gboolean  gst_mpegts_descriptor_parse_metadata (const GstMpegtsDescriptor *descriptor,
+                      GstMpegtsMetadataDescriptor **res);
+
+/* GST_MTS_DESC_METADATA_STD (0x27) */
+/**
+ * GstMpegtsMetadataSTDDescriptor:
+ * @input_leak_rate :
+ * @buffer_size :
+ * @output_leak_rate :
+ *
+ * Mpeg-TS metadata STD descriptor (ISO/IEC 13818-1).
+ */
+typedef struct _GstMpegtsMetadataSTDDescriptor GstMpegtsMetadataSTDDescriptor;
+struct _GstMpegtsMetadataSTDDescriptor
+{
+    guint32 input_leak_rate;
+    guint32 buffer_size;
+    guint32 output_leak_rate;
+};
+void gst_mpegts_metadata_STD_descriptor_free (GstMpegtsMetadataSTDDescriptor * desc);
+
+gboolean  gst_mpegts_descriptor_parse_metadata_STD (const GstMpegtsDescriptor *descriptor,
+                      GstMpegtsMetadataSTDDescriptor **res);
+
 
 GstMpegtsDescriptor *
 gst_mpegts_descriptor_from_custom (guint8 tag, const guint8 *data, gsize length);

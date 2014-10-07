@@ -1563,6 +1563,247 @@ gboolean  gst_mpegts_descriptor_parse_ibp (const GstMpegtsDescriptor *descriptor
     return TRUE;
 }
 
+/* GST_MTS_DESC_CONTENT_LABELING (0x24) */
+
+void gst_mpegts_content_labeling_descriptor_free (GstMpegtsContentLabelingDescriptor * desc)
+{
+    g_slice_free (GstMpegtsContentLabelingDescriptor, desc);
+}
+
+/**
+ * gst_mpegts_descriptor_parse_content_labeling:
+ * @descriptor: a %GST_MTS_DESC_CONTENT_LABELING #GstMpegtsDescriptor
+ * @res: (out) (transfer full): the #GstMpegtsContentLabelingDescriptor to fill
+ *
+ * Extracts the content labeling information from @descriptor.
+ *
+ * Returns: %TRUE if parsing succeeded, else %FALSE.
+ */
+gboolean  gst_mpegts_descriptor_parse_content_labeling (const GstMpegtsDescriptor *descriptor,
+                      GstMpegtsContentLabelingDescriptor **desc)
+{
+    guint8 *data;
+    GstMpegtsContentLabelingDescriptor *res;
+
+    g_return_val_if_fail (desc != NULL, FALSE);
+    /* Size should be at least 2 bytes */
+    __common_desc_checks (descriptor, GST_MTS_DESC_CONTENT_LABELING, 2, FALSE);
+
+    data = (guint8 *) descriptor->data + 2;
+
+    res = g_slice_new0 (GstMpegtsContentLabelingDescriptor);
+
+    res->application_format = (GST_READ_UINT16_BE (data));
+    data += 2;
+
+    if ( res->application_format == 0xFFFF && descriptor->length < 6 )
+        goto error;
+    else {
+        res->application_format_identifier = (GST_READ_UINT32_BE (data));
+        data += 4;
+    }
+
+    *desc = res;
+
+    return TRUE;
+
+error:
+    g_slice_free(GstMpegtsContentLabelingDescriptor, res);
+    return FALSE;
+}
+
+/* GST_MTS_DESC_METADATA_POINTER (0x25) */
+
+void gst_mpegts_metadata_pointer_descriptor_free (GstMpegtsMetadataPointerDescriptor * desc)
+{
+    g_slice_free (GstMpegtsMetadataPointerDescriptor, desc);
+}
+
+/**
+ * gst_mpegts_descriptor_metadata_pointer:
+ * @descriptor: a %GST_MTS_DESC_METADATA_POINTER #GstMpegtsDescriptor
+ * @res: (out) (transfer full): the #GstMpegtsMetadataPointerDescriptor to fill
+ *
+ * Extracts the metadata pointer information from @descriptor.
+ *
+ * Returns: %TRUE if parsing succeeded, else %FALSE.
+ */
+gboolean  gst_mpegts_descriptor_metadata_pointer (const GstMpegtsDescriptor *descriptor,
+        GstMpegtsMetadataPointerDescriptor **desc)
+{
+    guint8 *data;
+    GstMpegtsMetadataPointerDescriptor *res;
+    guint32 length;
+
+    g_return_val_if_fail (desc != NULL, FALSE);
+    /* Size should be at least 4 bytes */
+    __common_desc_checks (descriptor, GST_MTS_DESC_METADATA_POINTER, 4, FALSE);
+
+    data = (guint8 *) descriptor->data + 2;
+    length = descriptor->length;
+
+    res = g_slice_new0 (GstMpegtsMetadataPointerDescriptor);
+
+    res->application_format = (GST_READ_UINT16_BE (data));
+    data += 2;
+    length -= 2;
+
+    if ( res->application_format == 0xFFFF ) {
+        if ( length < 4) {
+            goto error;
+        } else {
+            res->application_format_identifier = (GST_READ_UINT32_BE (data));
+            data += 4;
+            length -= 4;
+        }
+    }
+
+    if ( length < 1 ) goto error;
+    res->format = *data;
+    data++;
+    length--;
+
+    if ( res->format == 0xFF ) {
+        if ( length < 4 ) {
+            goto error;
+        } else {
+            res->format_identifier = (GST_READ_UINT32_BE (data));
+            data += 4;
+            length -= 4;
+        }
+    }
+
+    if ( length < 1 ) goto error;
+    res->service_id = *data;
+
+    *desc = res;
+
+    return TRUE;
+
+error:
+    g_slice_free(GstMpegtsMetadataPointerDescriptor, res);
+    return FALSE;
+}
+
+/* GST_MTS_DESC_METADATA (0x26) */
+
+void gst_mpegts_metadata_descriptor_free (GstMpegtsMetadataDescriptor * desc)
+{
+    g_slice_free (GstMpegtsMetadataDescriptor, desc);
+}
+
+/**
+ * gst_mpegts_descriptor_metadata:
+ * @descriptor: a %GST_MTS_DESC_METADATA #GstMpegtsDescriptor
+ * @res: (out) (transfer full): the #GstMpegtsMetadataDescriptor to fill
+ *
+ * Extracts the metadata information from @descriptor.
+ *
+ * Returns: %TRUE if parsing succeeded, else %FALSE.
+ */
+gboolean  gst_mpegts_descriptor_parse_metadata (const GstMpegtsDescriptor *descriptor,
+                      GstMpegtsMetadataDescriptor **desc)
+{
+    guint8 *data;
+    GstMpegtsMetadataDescriptor *res;
+    guint32 length;
+
+    g_return_val_if_fail (desc != NULL, FALSE);
+    /* Size should be at least 4 bytes */
+    __common_desc_checks (descriptor, GST_MTS_DESC_METADATA, 4, FALSE);
+
+    data = (guint8 *) descriptor->data + 2;
+    length = descriptor->length;
+
+    res = g_slice_new0 (GstMpegtsMetadataDescriptor);
+
+    res->application_format = (GST_READ_UINT16_BE (data));
+    data += 2;
+    length -= 2;
+
+    if ( res->application_format == 0xFFFF ) {
+        if ( length < 4) {
+            goto error;
+        } else {
+            res->application_format_identifier = (GST_READ_UINT32_BE (data));
+            data += 4;
+            length -= 4;
+        }
+    }
+
+    if ( length < 1 ) goto error;
+    res->format = *data;
+    data++;
+    length--;
+
+    if ( res->format == 0xFF ) {
+        if ( length < 4 ) {
+            goto error;
+        } else {
+            res->format_identifier = (GST_READ_UINT32_BE (data));
+            data += 4;
+            length -= 4;
+        }
+    }
+
+    if ( length < 1 ) goto error;
+    res->service_id = *data;
+
+    *desc = res;
+
+    return TRUE;
+
+error:
+    g_slice_free(GstMpegtsMetadataDescriptor, res);
+    return FALSE;
+}
+
+/* GST_MTS_DESC_METADATA_STD (0x27) */
+
+void gst_mpegts_metadata_STD_descriptor_free (GstMpegtsMetadataSTDDescriptor * desc)
+{
+    g_slice_free (GstMpegtsMetadataSTDDescriptor, desc);
+}
+
+/**
+ * gst_mpegts_descriptor_parse_metadata_STD:
+ * @descriptor: a %GST_MTS_DESC_METADATA_STD #GstMpegtsDescriptor
+ * @res: (out) (transfer full): the #GstMpegtsMetadataSTDDescriptor to fill
+ *
+ * Extracts the metadata STD information from @descriptor.
+ *
+ * Returns: %TRUE if parsing succeeded, else %FALSE.
+ */
+gboolean  gst_mpegts_descriptor_parse_metadata_STD (const GstMpegtsDescriptor *descriptor,
+                      GstMpegtsMetadataSTDDescriptor **desc)
+{
+    guint8 *data;
+    GstMpegtsMetadataSTDDescriptor *res;
+
+    g_return_val_if_fail (desc != NULL, FALSE);
+    /* Size should be at least 9 bytes */
+    __common_desc_checks (descriptor, GST_MTS_DESC_METADATA_STD, 9, FALSE);
+
+    data = (guint8 *) descriptor->data + 2;
+
+    res = g_slice_new0 (GstMpegtsMetadataSTDDescriptor);
+
+    res->input_leak_rate = (((((guint32)*data) & 0x3f) << 16) |
+                       GST_READ_UINT16_BE (data+1));
+
+    data += 3;
+    res->buffer_size = (((((guint32)*data) & 0x3f) << 16) |
+                       GST_READ_UINT16_BE (data+1));
+
+    data += 3;
+    res->output_leak_rate = (((((guint32)*data) & 0x3f) << 16) |
+                       GST_READ_UINT16_BE (data+1));
+
+    *desc = res;
+
+    return TRUE;
+}
+
 /**
  * gst_mpegts_descriptor_from_custom:
  * @tag: descriptor tag
