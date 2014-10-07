@@ -18,6 +18,7 @@ libgstmpegts_@GST_API_VERSION@include_HEADERS = \
 	gst-dvb-section.h			\
 	gst-scte-section.h			\
 	gst-bd-section.h            \
+	gst-hdv-section.h           \
 	gstmpegtsdescriptor.h			\
 	gst-dvb-descriptor.h			\
 	gst-atsc-descriptor.h           \
@@ -47,6 +48,7 @@ glib_enum_headers=gstmpegtssection.h	\
 	gst-dvb-section.h		\
 	gst-scte-section.h		\
 	gst-bd-section.h        \
+	gst-hdv-section.h       \
 	gst-dvb-descriptor.h    \
     gst-atsc-descriptor.h   \
     gst-isdb-descriptor.h
