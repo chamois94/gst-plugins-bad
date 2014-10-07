@@ -233,29 +233,6 @@ guint gst_mpegts_descriptor_parse_iso_639_language_nb (const GstMpegtsDescriptor
 
 
 
-/* GST_MTS_DESC_DTG_LOGICAL_CHANNEL (0x83) */
-typedef struct _GstMpegtsLogicalChannelDescriptor GstMpegtsLogicalChannelDescriptor;
-typedef struct _GstMpegtsLogicalChannel GstMpegtsLogicalChannel;
-
-struct _GstMpegtsLogicalChannel
-{
-  guint16   service_id;
-  gboolean  visible_service;
-  guint16   logical_channel_number;
-};
-
-struct _GstMpegtsLogicalChannelDescriptor
-{
-  guint                   nb_channels;
-  GstMpegtsLogicalChannel channels[64];
-};
-
-/* FIXME : Maybe make two methods. One for getting the number of channels,
- * and the other for getting the content for one channel ? */
-gboolean
-gst_mpegts_descriptor_parse_logical_channel (const GstMpegtsDescriptor *descriptor,
-					     GstMpegtsLogicalChannelDescriptor *res);
-
 GstMpegtsDescriptor *
 gst_mpegts_descriptor_from_custom (guint8 tag, const guint8 *data, gsize length);
 

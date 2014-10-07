@@ -1046,43 +1046,6 @@ gst_mpegts_descriptor_parse_iso_639_language_nb (const GstMpegtsDescriptor *
 }
 
 /**
- * gst_mpegts_descriptor_parse_logical_channel:
- * @descriptor: a %GST_MTS_DESC_DTG_LOGICAL_CHANNEL #GstMpegtsDescriptor
- * @res: (out) (transfer none): the #GstMpegtsLogicalChannelDescriptor to fill
- *
- * Extracts the logical channels from @descriptor.
- *
- * Returns: %TRUE if parsing succeeded, else %FALSE.
- */
-gboolean
-gst_mpegts_descriptor_parse_logical_channel (const GstMpegtsDescriptor *
-    descriptor, GstMpegtsLogicalChannelDescriptor * res)
-{
-  guint i;
-  guint8 *data;
-
-  g_return_val_if_fail (descriptor != NULL && res != NULL, FALSE);
-  /* This descriptor loop can be empty, no size check required */
-  __common_desc_check_base (descriptor, GST_MTS_DESC_DTG_LOGICAL_CHANNEL,
-      FALSE);
-
-  data = (guint8 *) descriptor->data + 2;
-
-  res->nb_channels = descriptor->length / 4;
-
-  for (i = 0; i < res->nb_channels; i++) {
-    res->channels[i].service_id = GST_READ_UINT16_BE (data);
-    data += 2;
-    res->channels[i].visible_service = *data >> 7;
-    res->channels[i].logical_channel_number =
-        GST_READ_UINT16_BE (data) & 0x03ff;
-    data += 2;
-  }
-
-  return TRUE;
-}
-
-/**
  * gst_mpegts_descriptor_from_custom:
  * @tag: descriptor tag
  * @data: (transfer none): descriptor data (after tag and length field)

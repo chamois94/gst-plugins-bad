@@ -1,5 +1,5 @@
 /*
- * gstmpegtsdescriptor.h - 
+ * gst-dvb-descriptor.h -
  * Copyright (C) 2013 Edward Hervey
  * 
  * Authors:
@@ -154,6 +154,7 @@ typedef enum {
 
 /* GST_MTS_DESC_DVB_CAROUSEL_IDENTIFIER (0x13) */
 /* FIXME : Implement */
+#define GST_MTS_DESC_DVB_CAROUSEL_IDENTIFIER_carousel_id(desc)      (GST_READ_UINT32_BE((desc) + 2))
 
 /* GST_MTS_DESC_DVB_NETWORK_NAME (0x40) */
 gboolean gst_mpegts_descriptor_parse_dvb_network_name (const GstMpegtsDescriptor *descriptor,
@@ -833,8 +834,9 @@ gboolean gst_mpegts_descriptor_parse_dvb_scrambling (const GstMpegtsDescriptor *
 gboolean gst_mpegts_descriptor_parse_dvb_data_broadcast_id (const GstMpegtsDescriptor
        * descriptor, guint16 * data_broadcast_id, guint8 ** id_selector_bytes, guint8 * len);
 
-/* GST_MTS_DESC_DVB_AC3 (0x6a) */
+/* GST_MTS_DESC_DVB_AC3 (0x6a) ETSI TS 102 366 */
 /* FIXME : Implement */
+#define GST_MTS_DESC_DVB_AC3_bsid(desc)             ((desc)[2] & 0x1f)
 
 /* GST_MTS_DESC_EXT_DVB_T2_DELIVERY_SYSTEM (0x7F && 0x04) */
 typedef struct _GstMpegtsT2DeliverySystemCellExtension GstMpegtsT2DeliverySystemCellExtension;
@@ -900,6 +902,29 @@ GType gst_mpegts_t2_delivery_system_descriptor_get_type (void);
 void gst_mpegts_t2_delivery_system_descriptor_free (GstMpegtsT2DeliverySystemDescriptor * source);
 gboolean gst_mpegts_descriptor_parse_dvb_t2_delivery_system (const GstMpegtsDescriptor
               *descriptor, GstMpegtsT2DeliverySystemDescriptor ** res);
+
+/* GST_MTS_DESC_DVB_LOGICAL_CHANNEL (0x83) ETSI TR 101 162  */
+typedef struct _GstMpegtsLogicalChannelDescriptor GstMpegtsLogicalChannelDescriptor;
+typedef struct _GstMpegtsLogicalChannel GstMpegtsLogicalChannel;
+
+struct _GstMpegtsLogicalChannel
+{
+  guint16   service_id;
+  gboolean  visible_service;
+  guint16   logical_channel_number;
+};
+
+struct _GstMpegtsLogicalChannelDescriptor
+{
+  guint                   nb_channels;
+  GstMpegtsLogicalChannel channels[64];
+};
+
+/* FIXME : Maybe make two methods. One for getting the number of channels,
+ * and the other for getting the content for one channel ? */
+gboolean
+gst_mpegts_descriptor_parse_logical_channel (const GstMpegtsDescriptor *descriptor,
+                         GstMpegtsLogicalChannelDescriptor *res);
 
 G_END_DECLS
 
