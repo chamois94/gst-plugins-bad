@@ -37,6 +37,7 @@
 #include <gst/mpegts/gst-atsc-section.h>
 #include <gst/mpegts/gst-dvb-section.h>
 #include <gst/mpegts/gst-scte-section.h>
+#include <gst/mpegts/gst-bd-section.h>
 #include <gst/mpegts/gstmpegts-enumtypes.h>
 
 G_BEGIN_DECLS
