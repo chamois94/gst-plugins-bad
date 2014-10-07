@@ -233,8 +233,17 @@ gboolean  gst_mpegts_descriptor_parse_hierarchy (const GstMpegtsDescriptor *desc
 
 /* GST_MTS_DESC_REGISTRATION (0x05) */
 
+gboolean  gst_mpegts_descriptor_parse_registration (const GstMpegtsDescriptor *descriptor,
+                      guint32 *format_identifier,
+                      guint8 **additional_identification_info,
+                      gsize *additional_identification_info_size);
+
 GstMpegtsDescriptor *gst_mpegts_descriptor_from_registration (
     const gchar *format_identifier,
+    guint8 *additional_info, gsize additional_info_length);
+
+GstMpegtsDescriptor *gst_mpegts_descriptor_from_registration_int (
+    const guint32 format_identifier,
     guint8 *additional_info, gsize additional_info_length);
 
 /* GST_MTS_DESC_DATA_STREAM_ALIGNMENT (0x06) */

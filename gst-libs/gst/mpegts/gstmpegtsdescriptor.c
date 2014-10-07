@@ -959,11 +959,48 @@ gst_mpegts_descriptor_parse_hierarchy (const GstMpegtsDescriptor *descriptor,
 }
 
 /* GST_MTS_DESC_REGISTRATION (0x05) */
+
+/**
+ * gst_mpegts_descriptor_parse_registration:
+ * @descriptor: a %GST_MTS_DESC_CA #GstMpegtsDescriptor
+ * @format_identifier: (out) : the 32-bit value obtained from a Registration Authority (SMPTE)
+ * @additional_identification_info: (out) (allow-none): defined by the assignee of the format_identifier
+ * @additional_identification_info_size: (out) (allow-none): The size of @additional_identification_info in bytes
+ *
+ * Extracts the registration information from @descriptor.
+ *
+ * Returns: %TRUE if parsing succeeded, else %FALSE.
+ */
+gboolean
+gst_mpegts_descriptor_parse_registration (const GstMpegtsDescriptor *descriptor,
+                      guint32 *format_identifier,
+                      guint8 **additional_identification_info,
+                      gsize *additional_identification_info_size)
+{
+    guint8 *data;
+
+    g_return_val_if_fail (descriptor != NULL && format_identifier != NULL, FALSE);
+    /* Size should be at least 4 bytes */
+    __common_desc_checks (descriptor, GST_MTS_DESC_REGISTRATION, 4, FALSE);
+
+    data = (guint8 *) descriptor->data + 2;
+
+    *format_identifier = GST_READ_UINT32_BE(data);
+
+    data += 4;
+    if (additional_identification_info && additional_identification_info_size) {
+      *additional_identification_info = data;
+      *additional_identification_info_size = descriptor->length - 4;
+    }
+
+    return TRUE;
+}
+
 /**
  * gst_mpegts_descriptor_from_registration:
  * @format_identifier: (transfer none): a 4 character format identifier string
  * @additional_info: (transfer none) (allow-none): pointer to optional additional info
- * @additional_info_length: length of the optional @additional_info
+ * @additional_info_length: (allow-none): length of the optional @additional_info
  *
  * Creates a %GST_MTS_DESC_REGISTRATION #GstMpegtsDescriptor
  *
@@ -985,6 +1022,23 @@ gst_mpegts_descriptor_from_registration (const gchar * format_identifier,
     memcpy (descriptor->data + 6, additional_info, additional_info_length);
 
   return descriptor;
+}
+
+/**
+ * gst_mpegts_descriptor_from_registration_int:
+ * @format_identifier: (transfer none): a 32-bit unsigned format identifier
+ * @additional_info: (transfer none) (allow-none): pointer to optional additional info
+ * @additional_info_length: length of the optional @additional_info
+ *
+ * Creates a %GST_MTS_DESC_REGISTRATION #GstMpegtsDescriptor
+ *
+ * Return: #GstMpegtsDescriptor, %NULL on failure
+ */
+GstMpegtsDescriptor *
+gst_mpegts_descriptor_from_registration_int (guint32 format_identifier,
+    guint8 * additional_info, gsize additional_info_length)
+{
+    return gst_mpegts_descriptor_from_registration((const gchar*)&format_identifier,additional_info,additional_info_length);
 }
 
 /* GST_MTS_DESC_DATA_STREAM_ALIGNMENT (0x06) */
