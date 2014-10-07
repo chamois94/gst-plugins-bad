@@ -152,43 +152,6 @@ typedef enum {
 } GstMpegtsMiscDescriptorType;
 
 /**
- * GstMpegtsATSCDescriptorType:
- *
- * These values correspond to the registered descriptor type from
- * the various ATSC specifications.
- *
- * Consult the relevant specifications for more details.
- */
-typedef enum {
-  /* ATSC A/65 2009 */
-  GST_MTS_DESC_ATSC_STUFFING                    = 0x80,
-  GST_MTS_DESC_ATSC_AC3                         = 0x83,
-  GST_MTS_DESC_ATSC_CAPTION_SERVICE             = 0x86,
-  GST_MTS_DESC_ATSC_CONTENT_ADVISORY            = 0x87,
-  GST_MTS_DESC_ATSC_EXTENDED_CHANNEL_NAME       = 0xA0,
-  GST_MTS_DESC_ATSC_SERVICE_LOCATION            = 0xA1,
-  GST_MTS_DESC_ATSC_TIME_SHIFTED_SERVICE        = 0xA2,
-  GST_MTS_DESC_ATSC_COMPONENT_NAME              = 0xA3,
-  GST_MTS_DESC_ATSC_DCC_DEPARTING_REQUEST       = 0xA8,
-  GST_MTS_DESC_ATSC_DCC_ARRIVING_REQUEST        = 0xA9,
-  GST_MTS_DESC_ATSC_REDISTRIBUTION_CONTROL      = 0xAA,
-  GST_MTS_DESC_ATSC_GENRE                       = 0xAB,
-  GST_MTS_DESC_ATSC_PRIVATE_INFORMATION         = 0xAD,
-
-  /* ATSC A/53:3 2009 */
-  GST_MTS_DESC_ATSC_ENHANCED_SIGNALING          = 0xB2,
-
-  /* ATSC A/90 */
-  GST_MTS_DESC_ATSC_DATA_SERVICE                = 0xA4,
-  GST_MTS_DESC_ATSC_PID_COUNT                   = 0xA5,
-  GST_MTS_DESC_ATSC_DOWNLOAD_DESCRIPTOR         = 0xA6,
-  GST_MTS_DESC_ATSC_MULTIPROTOCOL_ENCAPSULATION = 0xA7,
-  GST_MTS_DESC_ATSC_MODULE_LINK                 = 0xB4,
-  GST_MTS_DESC_ATSC_CRC32                       = 0xB5,
-  GST_MTS_DESC_ATSC_GROUP_LINK                  = 0xB8,
-} GstMpegtsATSCDescriptorType;
-
-/**
  * GstMpegtsISDBDescriptorType:
  *
  * These values correspond to the registered descriptor type from
