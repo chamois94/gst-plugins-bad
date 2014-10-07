@@ -151,52 +151,6 @@ typedef enum {
   GST_MTS_DESC_DTG_LOGICAL_CHANNEL              = 0x83,    /* from DTG D-Book */
 } GstMpegtsMiscDescriptorType;
 
-/**
- * GstMpegtsISDBDescriptorType:
- *
- * These values correspond to the registered descriptor type from
- * the various ISDB specifications.
- *
- * Consult the relevant specifications for more details.
- */
-typedef enum {
-  /* ISDB ARIB B10 v4.6 */
-  GST_MTS_DESC_ISDB_HIERARCHICAL_TRANSMISSION   = 0xC0,
-  GST_MTS_DESC_ISDB_DIGITAL_COPY_CONTROL        = 0xC1,
-  GST_MTS_DESC_ISDB_NETWORK_IDENTIFICATION      = 0xC2,
-  GST_MTS_DESC_ISDB_PARTIAL_TS_TIME             = 0xc3,
-  GST_MTS_DESC_ISDB_AUDIO_COMPONENT             = 0xc4,
-  GST_MTS_DESC_ISDB_HYPERLINK                   = 0xc5,
-  GST_MTS_DESC_ISDB_TARGET_REGION               = 0xc6,
-  GST_MTS_DESC_ISDB_DATA_CONTENT                = 0xc7,
-  GST_MTS_DESC_ISDB_VIDEO_DECODE_CONTROL        = 0xc8,
-  GST_MTS_DESC_ISDB_DOWNLOAD_CONTENT            = 0xc9,
-  GST_MTS_DESC_ISDB_CA_EMM_TS                   = 0xca,
-  GST_MTS_DESC_ISDB_CA_CONTRACT_INFORMATION     = 0xcb,
-  GST_MTS_DESC_ISDB_CA_SERVICE                  = 0xcc,
-  GST_MTS_DESC_ISDB_TS_INFORMATION              = 0xcd,
-  GST_MTS_DESC_ISDB_EXTENDED_BROADCASTER        = 0xce,
-  GST_MTS_DESC_ISDB_LOGO_TRANSMISSION           = 0xcf,
-  GST_MTS_DESC_ISDB_BASIC_LOCAL_EVENT           = 0xd0,
-  GST_MTS_DESC_ISDB_REFERENCE                   = 0xd1,
-  GST_MTS_DESC_ISDB_NODE_RELATION               = 0xd2,
-  GST_MTS_DESC_ISDB_SHORT_NODE_INFORMATION      = 0xd3,
-  GST_MTS_DESC_ISDB_STC_REFERENCE               = 0xd4,
-  GST_MTS_DESC_ISDB_SERIES                      = 0xd5,
-  GST_MTS_DESC_ISDB_EVENT_GROUP                 = 0xd6,
-  GST_MTS_DESC_ISDB_SI_PARAMETER                = 0xd7,
-  GST_MTS_DESC_ISDB_BROADCASTER_NAME            = 0xd8,
-  GST_MTS_DESC_ISDB_COMPONENT_GROUP             = 0xd9,
-  GST_MTS_DESC_ISDB_SI_PRIME_TS                 = 0xda,
-  GST_MTS_DESC_ISDB_BOARD_INFORMATION           = 0xdb,
-  GST_MTS_DESC_ISDB_LDT_LINKAGE                 = 0xdc,
-  GST_MTS_DESC_ISDB_CONNECTED_TRANSMISSION      = 0xdd,
-  GST_MTS_DESC_ISDB_CONTENT_AVAILABILITY        = 0xde,
-  /* ... */
-  GST_MTS_DESC_ISDB_SERVICE_GROUP               = 0xe0
-  
-} GstMpegtsISDBDescriptorType;
-
 typedef struct _GstMpegtsDescriptor GstMpegtsDescriptor;
 
 #define GST_TYPE_MPEGTS_DESCRIPTOR (gst_mpegts_descriptor_get_type())

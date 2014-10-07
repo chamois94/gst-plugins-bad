@@ -20,6 +20,7 @@ libgstmpegts_@GST_API_VERSION@include_HEADERS = \
 	gstmpegtsdescriptor.h			\
 	gst-dvb-descriptor.h			\
 	gst-atsc-descriptor.h           \
+	gst-isdb-descriptor.h           \
 	mpegts.h
 
 nodist_libgstmpegts_@GST_API_VERSION@include_HEADERS = \
@@ -45,7 +46,8 @@ glib_enum_headers=gstmpegtssection.h	\
 	gst-dvb-section.h		\
 	gst-scte-section.h		\
 	gst-dvb-descriptor.h    \
-    gst-atsc-descriptor.h
+    gst-atsc-descriptor.h   \
+    gst-isdb-descriptor.h
 
 glib_enum_define=GST_MPEGTS
 glib_gen_prefix=gst_mpegts
