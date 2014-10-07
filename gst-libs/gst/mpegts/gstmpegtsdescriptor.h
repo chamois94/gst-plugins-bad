@@ -233,6 +233,21 @@ gboolean  gst_mpegts_descriptor_parse_hierarchy (const GstMpegtsDescriptor *desc
 
 /* GST_MTS_DESC_REGISTRATION (0x05) */
 
+# if (G_BYTE_ORDER == G_BIG_ENDIAN)
+#  define GST_MPEGTS_MAKE_REGISTRATION_FOURCC(a,b,c,d)      GST_MAKE_FOURCC(a,b,c,d)
+#  define GST_MPEGTS_STR_REGISTRATION_FOURCC(f)             GST_STR_FOURCC(f)
+#  define GST_MPEGTS_REGISTRATION_FOURCC_ARGS(fourcc)       GST_FOURCC_ARGS(fourcc)
+# else
+#  define GST_MPEGTS_MAKE_REGISTRATION_FOURCC(a,b,c,d)      ((guint32)((d)|(c)<<8|(b)<<16|(a)<<24))
+#  define GST_MPEGTS_STR_REGISTRATION_FOURCC(f)             ((guint32)(((f)[3])|((f)[2]<<8)|((f)[1]<<16)|((f)[0]<<24)))
+#  define GST_MPEGTS_REGISTRATION_FOURCC_ARGS(fourcc) \
+        ((gchar) (((fourcc)>>24 ) &0xff)), \
+        ((gchar) (((fourcc)>>16 ) &0xff)), \
+        ((gchar) (((fourcc)>>8)   &0xff)), \
+        ((gchar) (((fourcc))      &0xff))
+# endif
+#define GST_MPEGTS_REGISTRATION_FOURCC_FORMAT GST_FOURCC_FORMAT
+
 gboolean  gst_mpegts_descriptor_parse_registration (const GstMpegtsDescriptor *descriptor,
                       guint32 *format_identifier,
                       guint8 **additional_identification_info,
