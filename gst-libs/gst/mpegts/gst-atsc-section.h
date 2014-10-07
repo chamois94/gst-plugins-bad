@@ -66,6 +66,19 @@ typedef enum {
   GST_MTS_TABLE_ID_ATSC_SATELLITE_VIRTUAL_CHANNEL       = 0xDA,
 } GstMpegtsSectionATSCTableID;
 
+/**
+ * GstMpegtsATSCStreamType:
+ *
+ * Type of ATSC related mpeg-ts stream type.
+ *
+ * Consult "ATSC code point registry".
+ */
+typedef enum {
+  GST_MPEGTS_ATSC_STREAM_TYPE_VIDEO_MPEG2_DCII = 0x80,
+  GST_MPEGTS_ATSC_STREAM_TYPE_AUDIO_AC3        = 0x81,
+  GST_MPEGTS_ATSC_STREAM_TYPE_VIDEO_EA         = 0xEA  // defined for VC1 extension in RP227 (registration : 'VC-1')
+} GstMpegtsATSCStreamType;
+
 /* TVCT/CVCT */
 #define GST_TYPE_MPEGTS_ATSC_VCT (gst_mpegts_atsc_vct_get_type ())
 #define GST_TYPE_MPEGTS_ATSC_VCT_SOURCE (gst_mpegts_atsc_vct_source_get_type ())
