@@ -185,11 +185,73 @@ GPtrArray *gst_mpegts_parse_descriptors (guint8 * buffer, gsize buf_len);
 const GstMpegtsDescriptor * gst_mpegts_find_descriptor (GPtrArray *descriptors,
 							guint8 tag);
 
+/* GST_MTS_DESC_VIDEO_STREAM (0x02) */
+/**
+ * GstMpegtsVideoStreamDescriptor:
+ * @multiple_frame_rate : multiple frame rates present
+ * @frame_rate_code : define frame rate
+ * @mpeg1_only : only MPEG-1 only video data
+ * @constrained_parameter : shall not contain unconstrained ISO/IEC 11172-2 video data
+ * @still_picture : only still pictures
+ * @profile_and_level_indication : higher profile and level in the stream
+ * @chroma_format : chroma format
+ * @frame_rate_extension : any frame rarte extension field in the stream
+ *
+ * Mpeg-TS video stream descriptor (ISO/IEC 13818-1).
+ */
+typedef struct _GstMpegtsVideoStreamDescriptor GstMpegtsVideoStreamDescriptor;
+struct _GstMpegtsVideoStreamDescriptor
+{
+    gboolean    multiple_frame_rate;
+    guint8      frame_rate_code;
+    gboolean    mpeg1_only;
+    gboolean    constrained_parameter;
+    gboolean    still_picture;
+
+    /* if (MPEG_1_only_flag == 1) */
+    guint8      profile_and_level_indication;
+    guint8      chroma_format;
+    gboolean    frame_rate_extension;
+};
+
+gboolean  gst_mpegts_descriptor_parse_video_stream (const GstMpegtsDescriptor *descriptor,
+        GstMpegtsVideoStreamDescriptor *res);
+
+/* GST_MTS_DESC_AUDIO_STREAM (0x03) */
+gboolean  gst_mpegts_descriptor_parse_audio_stream (const GstMpegtsDescriptor *descriptor,
+                        gboolean    *free_format,
+                        gboolean    *id,
+                        guint8      *layer,
+                        gboolean    *variable_rate_audio_indicator);
+
+/* GST_MTS_DESC_HIERARCHY (0x04) */
+gboolean  gst_mpegts_descriptor_parse_hierarchy (const GstMpegtsDescriptor *descriptor,
+                        guint8  *hierarchy_type,
+                        guint8  *hierarchy_layer_index,
+                        guint8  *hierarchy_embedded_layer_index,
+                        guint8  *hierarchy_channel);
+
 /* GST_MTS_DESC_REGISTRATION (0x05) */
 
 GstMpegtsDescriptor *gst_mpegts_descriptor_from_registration (
     const gchar *format_identifier,
     guint8 *additional_info, gsize additional_info_length);
+
+/* GST_MTS_DESC_DATA_STREAM_ALIGNMENT (0x06) */
+gboolean  gst_mpegts_descriptor_parse_data_stream_alignment (const GstMpegtsDescriptor *descriptor,
+                      guint8 *alignment_type);
+
+/* GST_MTS_DESC_TARGET_BACKGROUND_GRID (0x07) */
+gboolean  gst_mpegts_descriptor_parse_background_grid (const GstMpegtsDescriptor *descriptor,
+                      guint16 *horizontal_size,
+                      guint16 *vertical_size,
+                      guint8  *aspect_ratio_information);
+
+/* GST_MTS_DESC_VIDEO_WINDOW (0x08) */
+gboolean  gst_mpegts_descriptor_parse_video_window (const GstMpegtsDescriptor *descriptor,
+                      guint16 *horizontal_offset,
+                      guint16 *vertical_offset,
+                      guint8  *window_priority);
 
 /* GST_MTS_DESC_CA (0x09) */
 gboolean  gst_mpegts_descriptor_parse_ca (GstMpegtsDescriptor *descriptor,
@@ -231,6 +293,46 @@ gboolean gst_mpegts_descriptor_parse_iso_639_language_idx (const GstMpegtsDescri
                                                            GstMpegtsIso639AudioType *audio_type);
 guint gst_mpegts_descriptor_parse_iso_639_language_nb (const GstMpegtsDescriptor *descriptor);
 
+/* GST_MTS_DESC_SYSTEM_CLOCK (0x0B) */
+gboolean  gst_mpegts_descriptor_parse_system_clock (const GstMpegtsDescriptor *descriptor,
+                      gboolean *external_clock_reference_indicator,
+                      guint8   *clock_accuracy_integer,
+                      guint8   *clock_accuracy_exponent);
+
+/* GST_MTS_DESC_MULTIPLEX_BUFFER_UTILIZATION (0x0C) */
+gboolean  gst_mpegts_descriptor_parse_multiplex_buffer_utilization (const GstMpegtsDescriptor *descriptor,
+                      gboolean *bound_valid,
+                      guint16   *LTW_offset_lower_bound,
+                      guint16   *LTW_offset_upper_bound);
+
+/* GST_MTS_DESC_COPYRIGHT (0x0D) */
+gboolean  gst_mpegts_descriptor_parse_copyright (const GstMpegtsDescriptor *descriptor,
+                      guint32  *copyright_identifier,
+                      const guint8 **additional_copyright_info,
+                      gsize *additional_copyright_info_size);
+
+/* GST_MTS_DESC_MAXIMUM_BITRATE (0x0E) */
+gboolean  gst_mpegts_descriptor_parse_maximum_bitrate (const GstMpegtsDescriptor *descriptor,
+                      guint32  *maximum_bitrate);
+
+/* GST_MTS_DESC_PRIVATE_DATA_INDICATOR (0x0F) */
+gboolean  gst_mpegts_descriptor_parse_private_data_indicator (const GstMpegtsDescriptor *descriptor,
+                      guint32  *indicator);
+
+/* GST_MTS_DESC_SMOOTHING_BUFFER (0x10) */
+gboolean  gst_mpegts_descriptor_parse_smoothing_buffer (const GstMpegtsDescriptor *descriptor,
+                      guint32  *sb_leak_rate,
+                      guint32  *sb_size);
+
+/* GST_MTS_DESC_STD (0x11) */
+gboolean  gst_mpegts_descriptor_parse_std (const GstMpegtsDescriptor *descriptor,
+                      gboolean  *leak_valid);
+
+/* GST_MTS_DESC_IBP (0x12) */
+gboolean  gst_mpegts_descriptor_parse_ibp (const GstMpegtsDescriptor *descriptor,
+                      gboolean  *closed_gop,
+                      gboolean  *identical_gop,
+                      guint16   *max_gop_length);
 
 
 GstMpegtsDescriptor *

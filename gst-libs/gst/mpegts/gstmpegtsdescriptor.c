@@ -61,11 +61,6 @@
  *
  * * Add common validation code for data presence and minimum/maximum expected
  *   size.
- * * Add parsing methods for the following descriptors that were previously 
- *   handled in mpegtsbase:
- *   * GST_MTS_DESC_DVB_DATA_BROADCAST_ID
- *   * GST_MTS_DESC_DVB_CAROUSEL_IDENTIFIER
- *   * GST_MTS_DESC_DVB_FREQUENCY_LIST
  */
 
 #define MAX_KNOWN_ICONV 25
@@ -843,6 +838,126 @@ gst_mpegts_find_descriptor (GPtrArray * descriptors, guint8 tag)
   return NULL;
 }
 
+/* GST_MTS_DESC_VIDEO_STREAM (0x02) */
+
+/**
+ * gst_mpegts_descriptor_parse_video_stream:
+ * @descriptor: a %GST_MTS_DESC_VIDEO_STREAM #GstMpegtsDescriptor
+ * @res: (out) (transfer none): the #GstMpegtsVideoStreamDescriptor to fill
+ *
+ * Extracts the video stream information from @descriptor.
+ *
+ * Returns: %TRUE if parsing succeeded, else %FALSE.
+ */
+gboolean
+gst_mpegts_descriptor_parse_video_stream (const GstMpegtsDescriptor *descriptor,
+        GstMpegtsVideoStreamDescriptor *res)
+{
+    guint8 *data;
+
+    /* Size should be at least 1 byte */
+    __common_desc_checks (descriptor, GST_MTS_DESC_VIDEO_STREAM, 1, FALSE);
+
+    data = (guint8 *) descriptor->data + 2;
+
+    res->multiple_frame_rate = ((*data & 0x80) == 0x80);
+    res->frame_rate_code = ((*data & 0x38) >> 3);
+    res->mpeg1_only = ((*data & 0x04) == 0x04);
+    res->constrained_parameter = ((*data & 0x02) == 0x02);
+    res->still_picture = ((*data & 0x01) == 0x01);
+
+    if ( res->mpeg1_only && descriptor->length == 3) {
+        data++;
+        res->profile_and_level_indication = *data;
+        data++;
+        res->chroma_format = ((*data & 0xc0) >> 6);
+        res->frame_rate_extension = ((*data & 0x20) == 0x20);
+    }
+
+    return TRUE;
+}
+
+/* GST_MTS_DESC_AUDIO_STREAM (0x03) */
+
+/**
+ * gst_mpegts_descriptor_parse_audio_stream:
+ * @descriptor: a %GST_MTS_DESC_AUDIO_STREAM #GstMpegtsDescriptor
+ * @free_format : (out) (transfer none): audio stream may contain one or more audio frame with bitrate_index to '0000'
+ * @id : (out) (transfer none): ID field set to '1' in each frame
+ * @layer : (out) (transfer none): layer field
+ * @variable_rate_audio_indicator : (out) (transfer none): encoded value of the bit rate shall not change
+ *
+ * Extracts the audio stream information from @descriptor.
+ *
+ * Returns: %TRUE if parsing succeeded, else %FALSE.
+ */
+gboolean
+gst_mpegts_descriptor_parse_audio_stream (const GstMpegtsDescriptor *descriptor,
+        gboolean    *free_format,
+        gboolean    *id,
+        guint8      *layer,
+        gboolean    *variable_rate_audio_indicator)
+{
+    guint8 *data;
+
+    g_return_val_if_fail (free_format != NULL && id != NULL &&
+            layer != NULL && variable_rate_audio_indicator != NULL, FALSE);
+    /* Size should be 1 byte */
+    __common_desc_checks (descriptor, GST_MTS_DESC_AUDIO_STREAM, 1, FALSE);
+
+    data = (guint8 *) descriptor->data + 2;
+
+    *free_format = ((*data & 0x80) == 0x80);
+    *id = ((*data & 0x40) == 0x40);
+    *layer = ((*data & 0x30) >> 4);
+    *variable_rate_audio_indicator = ((*data & 0x08) == 0x08);
+
+    return TRUE;
+}
+
+/* GST_MTS_DESC_HIERARCHY (0x04) */
+
+/**
+ * gst_mpegts_descriptor_parse_hierarchy:
+ * @descriptor: a %GST_MTS_DESC_HIERARCHY #GstMpegtsDescriptor
+ * @hierarchy_type: (out) (transfer none): the hierarchical relation layer and embedded layer
+ * @hierarchy_layer_index:  (out) (transfer none): 6-bit index of the associated program element in
+ * a table of coding layer hierarchies
+ * @hierarchy_embedded_layer_index:  (out) (transfer none): 6-bit hierarchy table index of the PE
+ * that needs to be accessed before decoding the ES associated with this descriptor
+ * @hierarchy_channel:  (out) (transfer none): 6-bit channel number for the associated program element
+ *
+ * Extracts the hierarchy information from @descriptor.
+ *
+ * Returns: %TRUE if parsing succeeded, else %FALSE.
+ */
+gboolean
+gst_mpegts_descriptor_parse_hierarchy (const GstMpegtsDescriptor *descriptor,
+        guint8  *hierarchy_type,
+        guint8  *hierarchy_layer_index,
+        guint8  *hierarchy_embedded_layer_index,
+        guint8  *hierarchy_channel)
+{
+    guint8 *data;
+
+    g_return_val_if_fail (hierarchy_type != NULL && hierarchy_layer_index != NULL &&
+            hierarchy_embedded_layer_index != NULL && hierarchy_channel != NULL, FALSE);
+    /* Size should be 4 bytes */
+    __common_desc_checks (descriptor, GST_MTS_DESC_HIERARCHY, 4, FALSE);
+
+    data = (guint8 *) descriptor->data + 2;
+
+    *hierarchy_type = ((*data & 0x0f));
+    data++;
+    *hierarchy_layer_index = ((*data & 0x3f));
+    data++;
+    *hierarchy_embedded_layer_index = ((*data & 0x3f));
+    data++;
+    *hierarchy_channel = ((*data & 0x3f));
+
+    return TRUE;
+}
+
 /* GST_MTS_DESC_REGISTRATION (0x05) */
 /**
  * gst_mpegts_descriptor_from_registration:
@@ -870,6 +985,101 @@ gst_mpegts_descriptor_from_registration (const gchar * format_identifier,
     memcpy (descriptor->data + 6, additional_info, additional_info_length);
 
   return descriptor;
+}
+
+/* GST_MTS_DESC_DATA_STREAM_ALIGNMENT (0x06) */
+
+/**
+ * gst_mpegts_descriptor_parse_data_stream_alignment:
+ * @descriptor: a %GST_MTS_DESC_DATA_STREAM_ALIGNMENT #GstMpegtsDescriptor
+ * @alignment_type: (out) : alignment type for video stream
+ *
+ * Extracts the data stream alignment information from @descriptor.
+ *
+ * Returns: %TRUE if parsing succeeded, else %FALSE.
+ */
+gboolean  gst_mpegts_descriptor_parse_data_stream_alignment (const GstMpegtsDescriptor *descriptor,
+                      guint8 *alignment_type)
+{
+    guint8 *data;
+
+    g_return_val_if_fail (alignment_type != NULL, FALSE);
+    /* Size should be 1 byte */
+    __common_desc_checks (descriptor, GST_MTS_DESC_DATA_STREAM_ALIGNMENT, 1, FALSE);
+
+    data = (guint8 *) descriptor->data + 2;
+
+    *alignment_type = *data;
+
+    return TRUE;
+}
+
+/* GST_MTS_DESC_TARGET_BACKGROUND_GRID (0x07) */
+
+/**
+ * gst_mpegts_descriptor_parse_background_grid:
+ * @descriptor: a %GST_MTS_DESC_TARGET_BACKGROUND_GRID #GstMpegtsDescriptor
+ * @horizontal_size: (out) : horizontal size of the target background
+ * @vertical_size: (out) : vertical size of the target background
+ * @aspect_ratio_information: (out) : sample or display aspect ratio
+ *
+ * Extracts the background grid information from @descriptor.
+ *
+ * Returns: %TRUE if parsing succeeded, else %FALSE.
+ */
+gboolean  gst_mpegts_descriptor_parse_background_grid (const GstMpegtsDescriptor *descriptor,
+                      guint16 *horizontal_size,
+                      guint16 *vertical_size,
+                      guint8  *aspect_ratio_information)
+{
+    guint8 *data;
+
+    g_return_val_if_fail (horizontal_size != NULL && vertical_size != NULL && aspect_ratio_information != NULL, FALSE);
+    /* Size should be 4 bytes */
+    __common_desc_checks (descriptor, GST_MTS_DESC_DATA_STREAM_ALIGNMENT, 4, FALSE);
+
+    data = (guint8 *) descriptor->data + 2;
+
+    *horizontal_size = (GST_READ_UINT16_BE (data) >> 2);
+    *vertical_size = ((GST_READ_UINT32_BE (data) & 0x0003fff0) >> 4);
+    data+= 3;
+    *aspect_ratio_information = (*data & 0x0f);
+
+    return TRUE;
+}
+
+/* GST_MTS_DESC_VIDEO_WINDOW (0x08) */
+
+/**
+ * gst_mpegts_descriptor_parse_video_window:
+ * @descriptor: a %GST_MTS_DESC_VIDEO_WINDOW #GstMpegtsDescriptor
+ * @horizontal_offset: (out) : horizontal offset of the video window
+ * @vertical_offset: (out) : vertical offset of the video window
+ * @window_priority: (out) : window priority
+ *
+ * Extracts the video window information from @descriptor.
+ *
+ * Returns: %TRUE if parsing succeeded, else %FALSE.
+ */
+gboolean  gst_mpegts_descriptor_parse_video_window (const GstMpegtsDescriptor *descriptor,
+                      guint16 *horizontal_offset,
+                      guint16 *vertical_offset,
+                      guint8  *window_priority)
+{
+    guint8 *data;
+
+    g_return_val_if_fail (horizontal_offset != NULL && vertical_offset != NULL && window_priority != NULL, FALSE);
+    /* Size should be 4 bytes */
+    __common_desc_checks (descriptor, GST_MTS_DESC_DATA_STREAM_ALIGNMENT, 4, FALSE);
+
+    data = (guint8 *) descriptor->data + 2;
+
+    *horizontal_offset = (GST_READ_UINT16_BE (data) >> 2);
+    *vertical_offset = ((GST_READ_UINT32_BE (data) & 0x0003fff0) >> 4);
+    data+= 3;
+    *window_priority = (*data & 0x0f);
+
+    return TRUE;
 }
 
 /* GST_MTS_DESC_CA (0x09) */
@@ -1043,6 +1253,260 @@ gst_mpegts_descriptor_parse_iso_639_language_nb (const GstMpegtsDescriptor *
   __common_desc_check_base (descriptor, GST_MTS_DESC_ISO_639_LANGUAGE, FALSE);
 
   return descriptor->length / 4;
+}
+
+/* GST_MTS_DESC_SYSTEM_CLOCK (0x0B) */
+
+/**
+ * gst_mpegts_descriptor_parse_system_clock:
+ * @descriptor: a %GST_MTS_DESC_SYSTEM_CLOCK #GstMpegtsDescriptor
+ * @external_clock_reference_indicator: (out) :
+ * @clock_accuracy_integer: (out) :
+ * @clock_accuracy_exponent: (out) :
+ *
+ * Extracts the video window information from @descriptor.
+ *
+ * Returns: %TRUE if parsing succeeded, else %FALSE.
+ */
+gboolean  gst_mpegts_descriptor_parse_system_clock (const GstMpegtsDescriptor *descriptor,
+                      gboolean *external_clock_reference_indicator,
+                      guint8   *clock_accuracy_integer,
+                      guint8   *clock_accuracy_exponent)
+{
+    guint8 *data;
+
+    g_return_val_if_fail (external_clock_reference_indicator != NULL && clock_accuracy_integer != NULL && clock_accuracy_exponent != NULL, FALSE);
+    /* Size should be 2 bytes */
+    __common_desc_checks (descriptor, GST_MTS_DESC_DATA_STREAM_ALIGNMENT, 2, FALSE);
+
+    data = (guint8 *) descriptor->data + 2;
+
+    *external_clock_reference_indicator = ((*data & 0x80) == 0x80);
+    *clock_accuracy_integer = (*data & 0x3f);
+    data++;
+    *clock_accuracy_exponent = ((*data & 0xe0) >> 5);
+
+    return TRUE;
+}
+
+/* GST_MTS_DESC_MULTIPLEX_BUFFER_UTILIZATION (0x0C) */
+
+/**
+ * gst_mpegts_descriptor_parse_multiplex_buffer_utilization:
+ * @descriptor: a %GST_MTS_DESC_MULTIPLEX_BUFFER_UTILIZATION #GstMpegtsDescriptor
+ * @bound_valid: (out) :
+ * @LTW_offset_lower_bound: (out) :
+ * @LTW_offset_upper_bound: (out) :
+ *
+ * Extracts the multiplex buffer utilization information from @descriptor.
+ *
+ * Returns: %TRUE if parsing succeeded, else %FALSE.
+ */
+gboolean  gst_mpegts_descriptor_parse_multiplex_buffer_utilization (const GstMpegtsDescriptor *descriptor,
+                      gboolean *bound_valid,
+                      guint16   *LTW_offset_lower_bound,
+                      guint16   *LTW_offset_upper_bound)
+{
+    guint8 *data;
+
+    g_return_val_if_fail (bound_valid != NULL && LTW_offset_lower_bound != NULL && LTW_offset_upper_bound != NULL, FALSE);
+    /* Size should be 4 bytes */
+    __common_desc_checks (descriptor, GST_MTS_DESC_DATA_STREAM_ALIGNMENT, 4, FALSE);
+
+    data = (guint8 *) descriptor->data + 2;
+
+    *bound_valid = ((*data & 0x80) == 0x80);
+    *LTW_offset_lower_bound = (GST_READ_UINT16_BE (data) & 0x7fff);
+    data += 2;
+    *LTW_offset_upper_bound = (GST_READ_UINT16_BE (data) & 0x7fff);
+
+    return TRUE;
+}
+
+/* GST_MTS_DESC_COPYRIGHT (0x0D) */
+
+/**
+ * gst_mpegts_descriptor_parse_copyright:
+ * @descriptor: a %GST_MTS_DESC_COPYRIGHT #GstMpegtsDescriptor
+ * @copyright_identifier: (out) :
+ * @additional_copyright_info: (out) (allow-none) :
+ * @additional_copyright_info_size: (out) (allow-none) :
+ *
+ * Extracts the copyright information from @descriptor.
+ *
+ * Returns: %TRUE if parsing succeeded, else %FALSE.
+ */
+gboolean  gst_mpegts_descriptor_parse_copyright (const GstMpegtsDescriptor *descriptor,
+                      guint32  *copyright_identifier,
+                      const guint8 **additional_copyright_info,
+                      gsize *additional_copyright_info_size)
+{
+    guint8 *data;
+
+    g_return_val_if_fail (copyright_identifier != NULL, FALSE);
+    /* Size should be 4 bytes */
+    __common_desc_checks (descriptor, GST_MTS_DESC_COPYRIGHT, 4, FALSE);
+
+    data = (guint8 *) descriptor->data + 2;
+
+    *copyright_identifier = GST_READ_UINT32_BE (data);
+
+    data += 4;
+    if (additional_copyright_info && additional_copyright_info_size) {
+      *additional_copyright_info = data;
+      *additional_copyright_info_size = descriptor->length - 4;
+    }
+
+    return TRUE;
+}
+
+/* GST_MTS_DESC_MAXIMUM_BITRATE (0x0E) */
+
+/**
+ * gst_mpegts_descriptor_parse_maximum_bitrate:
+ * @descriptor: a %GST_MTS_DESC_MAXIMUM_BITRATE #GstMpegtsDescriptor
+ * @maximum_bitrate: (out) : maximum_bitrate
+ *
+ * Extracts the maximum bitrate from @descriptor.
+ *
+ * Returns: %TRUE if parsing succeeded, else %FALSE.
+ */
+gboolean  gst_mpegts_descriptor_parse_maximum_bitrate (const GstMpegtsDescriptor *descriptor,
+                      guint32  *maximum_bitrate)
+{
+    guint8 *data;
+
+    g_return_val_if_fail (maximum_bitrate != NULL, FALSE);
+    /* Size should be 3 bytes */
+    __common_desc_checks (descriptor, GST_MTS_DESC_MAXIMUM_BITRATE, 3, FALSE);
+
+    data = (guint8 *) descriptor->data + 2;
+
+    *maximum_bitrate = (((((guint32)*data) & 0x3f) << 16) |
+                       GST_READ_UINT16_BE (data+1));
+
+    return TRUE;
+}
+
+/* GST_MTS_DESC_PRIVATE_DATA_INDICATOR (0x0F) */
+
+/**
+ * gst_mpegts_descriptor_parse_private_data_indicator:
+ * @descriptor: a %GST_MTS_DESC_PRIVATE_DATA_INDICATOR #GstMpegtsDescriptor
+ * @indicator: (out) :
+ *
+ * Extracts the private data indicator information from @descriptor.
+ *
+ * Returns: %TRUE if parsing succeeded, else %FALSE.
+ */
+gboolean  gst_mpegts_descriptor_parse_private_data_indicator (const GstMpegtsDescriptor *descriptor,
+                      guint32  *indicator)
+{
+    guint8 *data;
+
+    g_return_val_if_fail (indicator != NULL, FALSE);
+    /* Size should be 4 bytes */
+    __common_desc_checks (descriptor, GST_MTS_DESC_PRIVATE_DATA_INDICATOR, 4, FALSE);
+
+    data = (guint8 *) descriptor->data + 2;
+
+    *indicator = GST_READ_UINT32_BE (data);
+
+    return TRUE;
+}
+
+/* GST_MTS_DESC_SMOOTHING_BUFFER (0x10) */
+
+/**
+ * gst_mpegts_descriptor_parse_smoothing_buffer:
+ * @descriptor: a %GST_MTS_DESC_SMOOTHING_BUFFER #GstMpegtsDescriptor
+ * @sb_leak_rate: (out) :
+ * @sb_size: (out) :
+ *
+ * Extracts the smoothing buffer information from @descriptor.
+ *
+ * Returns: %TRUE if parsing succeeded, else %FALSE.
+ */
+gboolean  gst_mpegts_descriptor_parse_smoothing_buffer (const GstMpegtsDescriptor *descriptor,
+                      guint32  *sb_leak_rate,
+                      guint32  *sb_size)
+{
+    guint8 *data;
+
+    g_return_val_if_fail (sb_leak_rate != NULL && sb_size != NULL, FALSE);
+    /* Size should be 6 bytes */
+    __common_desc_checks (descriptor, GST_MTS_DESC_SMOOTHING_BUFFER, 6, FALSE);
+
+    data = (guint8 *) descriptor->data + 2;
+
+    *sb_leak_rate = (((((guint32)*data) & 0x3f) << 16) |
+                       GST_READ_UINT16_BE (data+1));
+
+    data += 3;
+    *sb_size = (((((guint32)*data) & 0x3f) << 16) |
+                       GST_READ_UINT16_BE (data+1));
+
+    return TRUE;
+}
+
+/* GST_MTS_DESC_STD (0x11) */
+
+/**
+ * gst_mpegts_descriptor_parse_std:
+ * @descriptor: a %GST_MTS_DESC_STD #GstMpegtsDescriptor
+ * @leak_valid: (out) :
+ *
+ * Extracts the std information from @descriptor.
+ *
+ * Returns: %TRUE if parsing succeeded, else %FALSE.
+ */
+gboolean  gst_mpegts_descriptor_parse_std (const GstMpegtsDescriptor *descriptor,
+                      gboolean  *leak_valid)
+{
+    guint8 *data;
+
+    g_return_val_if_fail (leak_valid != NULL, FALSE);
+    /* Size should be 1 byte */
+    __common_desc_checks (descriptor, GST_MTS_DESC_STD, 1, FALSE);
+
+    data = (guint8 *) descriptor->data + 2;
+
+    *leak_valid = ((*data & 0x01) == 0x01);
+
+    return TRUE;
+}
+
+/* GST_MTS_DESC_IBP (0x12) */
+
+/**
+ * gst_mpegts_descriptor_parse_ibp:
+ * @descriptor: a %GST_MTS_DESC_IBP #GstMpegtsDescriptor
+ * @closed_gop: (out) :
+ * @identical_gop: (out) :
+ * @max_gop_length: (out) :
+ *
+ * Extracts the IBP information from @descriptor.
+ *
+ * Returns: %TRUE if parsing succeeded, else %FALSE.
+ */
+gboolean  gst_mpegts_descriptor_parse_ibp (const GstMpegtsDescriptor *descriptor,
+                      gboolean  *closed_gop,
+                      gboolean  *identical_gop,
+                      guint16   *max_gop_length)
+{
+    guint8 *data;
+
+    g_return_val_if_fail (closed_gop != NULL && identical_gop != NULL && max_gop_length != NULL, FALSE);
+    /* Size should be 2 bytes */
+    __common_desc_checks (descriptor, GST_MTS_DESC_IBP, 2, FALSE);
+
+    data = (guint8 *) descriptor->data + 2;
+
+    *closed_gop = ((*data & 0x80) == 0x80);
+    *identical_gop = ((*data & 0x40) == 0x40);
+    *max_gop_length = (GST_READ_UINT16_BE (data) & 0x3fff);
+
+    return TRUE;
 }
 
 /**
