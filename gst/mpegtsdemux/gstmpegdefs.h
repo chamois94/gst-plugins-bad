@@ -40,46 +40,6 @@
     SAFE_CHAR((a) >> 8 & 0xff),				\
     SAFE_CHAR(a & 0xff)
 
-/* Stream type assignments */
-/* FIXME: Put these in mpegts lib separate stream type enums */
-/* Un-official Dirac extension */
-#define ST_VIDEO_DIRAC                  0xd1
-
-/* private stream types */
-#define ST_PS_VIDEO_MPEG2_DCII          0x80
-#define ST_PS_AUDIO_AC3                 0x81
-#define ST_PS_AUDIO_DTS                 0x8a
-#define ST_PS_AUDIO_LPCM                0x8b
-#define ST_PS_DVD_SUBPICTURE            0xff
-
-/* Blu-ray related (registration: 'HDMV'*/
-#define ST_BD_AUDIO_LPCM                0x80
-#define ST_BD_AUDIO_AC3                 0x81
-#define ST_BD_AUDIO_DTS                 0x82
-#define ST_BD_AUDIO_AC3_TRUE_HD         0x83
-#define ST_BD_AUDIO_AC3_PLUS            0x84
-#define ST_BD_AUDIO_DTS_HD              0x85
-#define ST_BD_AUDIO_DTS_HD_MASTER_AUDIO 0x86
-#define ST_BD_AUDIO_EAC3                0x87
-#define ST_BD_PGS_SUBPICTURE            0x90
-#define ST_BD_IGS                       0x91
-#define ST_BD_SUBTITLE                  0x92
-#define ST_BD_SECONDARY_AC3_PLUS        0xa1
-#define ST_BD_SECONDARY_DTS_HD          0xa2
-
-/* defined for VC1 extension in RP227 */
-#define ST_PRIVATE_EA                   0xea
-
-/* Following only apply for streams identified as HDV,
- * According to specification 61834-11 the PMT will use
- * a registration descriptor with values TSMV or TSHV */
-/* HDV AUX stream mapping
- * 0xA0      ISO/IEC 61834-11
- * 0xA1      ISO/IEC 61834-11
- */
-#define ST_HDV_AUX_A                    0xa0
-#define ST_HDV_AUX_V                    0xa1
-
 #define CLOCK_BASE 9LL
 #define CLOCK_FREQ (CLOCK_BASE * 10000)
 

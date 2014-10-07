@@ -39,7 +39,6 @@
 
 #include <gst/gst-i18n-plugin.h>
 #include "mpegtsbase.h"
-#include "gstmpegdesc.h"
 
 #define RUNNING_STATUS_RUNNING 4
 
@@ -422,14 +421,16 @@ static guint32
 get_registration_from_descriptors (GPtrArray * descriptors)
 {
   const GstMpegtsDescriptor *desc;
+  guint32 format_identifier;
 
   if ((desc =
           gst_mpegts_find_descriptor (descriptors,
               GST_MTS_DESC_REGISTRATION))) {
     if (G_UNLIKELY (desc->length < 4)) {
       GST_WARNING ("Registration descriptor with length < 4. (Corrupted ?)");
-    } else
-      return GST_READ_UINT32_BE (desc->data + 2);
+    } else if (gst_mpegts_descriptor_parse_registration(desc,&format_identifier,NULL,NULL)) {
+        return format_identifier;
+    }
   }
 
   return 0;
@@ -583,8 +584,8 @@ mpegts_base_deactivate_program (MpegTSBase * base, MpegTSBaseProgram * program)
                 get_registration_from_descriptors (stream->descriptors);
 
             /* Not a private section stream */
-            if (registration_id != DRF_ID_CUEI
-                && registration_id != DRF_ID_ETV1)
+            if (registration_id != GST_MPEGTS_MAKE_REGISTRATION_FOURCC ('C', 'U', 'E', 'I')
+                && registration_id != GST_MPEGTS_MAKE_REGISTRATION_FOURCC ('E', 'T', 'V', '1') )
               break;
             /* Fall through on purpose - remove this PID from known_psi */
           }
@@ -660,7 +661,8 @@ mpegts_base_activate_program (MpegTSBase * base, MpegTSBaseProgram * program,
         guint32 registration_id =
             get_registration_from_descriptors (stream->descriptors);
         /* Not a private section stream */
-        if (registration_id != DRF_ID_CUEI && registration_id != DRF_ID_ETV1)
+        if (registration_id != GST_MPEGTS_MAKE_REGISTRATION_FOURCC ('C', 'U', 'E', 'I')
+            && registration_id != GST_MPEGTS_MAKE_REGISTRATION_FOURCC ('E', 'T', 'V', '1') )
           break;
         /* Fall through on purpose - remove this PID from known_psi */
       }

@@ -40,7 +40,6 @@
 
 #include "mpegtsbase.h"
 #include "tsdemux.h"
-#include "gstmpegdesc.h"
 #include "gstmpegdefs.h"
 #include "mpegtspacketizer.h"
 #include "pesparse.h"
@@ -1054,9 +1053,9 @@ create_pad_for_stream (MpegTSBase * base, MpegTSBaseStream * bstream,
 
   /* First handle BluRay-specific stream types since there is some overlap
    * between BluRay and non-BluRay streay type identifiers */
-  if (program->registration_id == DRF_ID_HDMV) {
+  if (program->registration_id == GST_MPEGTS_MAKE_REGISTRATION_FOURCC ('H', 'D', 'M', 'V')) {
     switch (bstream->stream_type) {
-      case ST_BD_AUDIO_AC3:
+      case GST_MPEGTS_BD_STREAM_TYPE_AUDIO_AC3:
       {
         const GstMpegtsDescriptor *ac3_desc;
 
@@ -1064,7 +1063,7 @@ create_pad_for_stream (MpegTSBase * base, MpegTSBaseStream * bstream,
         ac3_desc =
             mpegts_get_descriptor_from_stream (bstream,
             GST_MTS_DESC_AC3_AUDIO_STREAM);
-        if (ac3_desc && DESC_AC_AUDIO_STREAM_bsid (ac3_desc->data) != 16) {
+        if (ac3_desc && GST_MTS_DESC_DVB_AC3_bsid (ac3_desc->data) != 16) {
           GST_LOG ("ac3 audio");
           is_audio = TRUE;
           caps = gst_caps_new_empty_simple ("audio/x-ac3");
@@ -1074,27 +1073,27 @@ create_pad_for_stream (MpegTSBase * base, MpegTSBaseStream * bstream,
         }
         break;
       }
-      case ST_BD_AUDIO_EAC3:
-      case ST_BD_AUDIO_AC3_PLUS:
+      case GST_MPEGTS_BD_STREAM_TYPE_AUDIO_EAC3:
+      case GST_MPEGTS_BD_STREAM_TYPE_AUDIO_AC3_PLUS:
         is_audio = TRUE;
         caps = gst_caps_new_empty_simple ("audio/x-eac3");
         break;
-      case ST_BD_AUDIO_AC3_TRUE_HD:
+      case GST_MPEGTS_BD_STREAM_TYPE_AUDIO_AC3_TRUE_HD:
         is_audio = TRUE;
         caps = gst_caps_new_empty_simple ("audio/x-true-hd");
         stream->target_pes_substream = 0x72;
         break;
-      case ST_BD_AUDIO_LPCM:
+      case GST_MPEGTS_BD_STREAM_TYPE_AUDIO_LPCM:
         is_audio = TRUE;
         caps = gst_caps_new_empty_simple ("audio/x-private-ts-lpcm");
         break;
-      case ST_BD_PGS_SUBPICTURE:
+      case GST_MPEGTS_BD_STREAM_TYPE_PGS_SUBPICTURE:
         is_subpicture = TRUE;
         caps = gst_caps_new_empty_simple ("subpicture/x-pgs");
         sparse = TRUE;
         break;
-      case ST_BD_AUDIO_DTS_HD:
-      case ST_BD_AUDIO_DTS_HD_MASTER_AUDIO:
+      case GST_MPEGTS_BD_STREAM_TYPE_AUDIO_DTS_HD:
+      case GST_MPEGTS_BD_STREAM_TYPE_AUDIO_DTS_HD_MASTER_AUDIO:
         is_audio = TRUE;
         caps = gst_caps_new_empty_simple ("audio/x-dts");
         stream->target_pes_substream = 0x71;
@@ -1109,9 +1108,9 @@ create_pad_for_stream (MpegTSBase * base, MpegTSBaseStream * bstream,
   switch (bstream->stream_type) {
     case GST_MPEGTS_STREAM_TYPE_VIDEO_MPEG1:
     case GST_MPEGTS_STREAM_TYPE_VIDEO_MPEG2:
-    case ST_PS_VIDEO_MPEG2_DCII:
+    case GST_MPEGTS_ATSC_STREAM_TYPE_VIDEO_MPEG2_DCII:
       /* FIXME : Use DCII registration code (ETV1 ?) to handle that special
-       * Stream type (ST_PS_VIDEO_MPEG2_DCII) */
+       * Stream type (GST_MPEGTS_ATSC_STREAM_TYPE_VIDEO_MPEG2_DCII) */
       /* FIXME : Use video decriptor (0x1) to refine caps with:
        * * frame_rate
        * * profile_and_level
@@ -1132,7 +1131,7 @@ create_pad_for_stream (MpegTSBase * base, MpegTSBaseStream * bstream,
           gst_caps_new_simple ("audio/mpeg", "mpegversion", G_TYPE_INT, 1,
           NULL);
       /* HDV is always mpeg 1 audio layer 2 */
-      if (program->registration_id == DRF_ID_TSHV)
+      if (program->registration_id == GST_MPEGTS_MAKE_REGISTRATION_FOURCC ('T', 'S', 'H', 'V'))
         gst_caps_set_simple (caps, "layer", G_TYPE_INT, 2, NULL);
       break;
     case GST_MPEGTS_STREAM_TYPE_PRIVATE_PES_PACKETS:
@@ -1179,18 +1178,18 @@ create_pad_for_stream (MpegTSBase * base, MpegTSBaseStream * bstream,
       }
 
       switch (bstream->registration_id) {
-        case DRF_ID_DTS1:
-        case DRF_ID_DTS2:
-        case DRF_ID_DTS3:
+        case GST_MPEGTS_MAKE_REGISTRATION_FOURCC ('D', 'T', 'S', '1'):
+        case GST_MPEGTS_MAKE_REGISTRATION_FOURCC ('D', 'T', 'S', '2'):
+        case GST_MPEGTS_MAKE_REGISTRATION_FOURCC ('D', 'T', 'S', '3'):
           /* SMPTE registered DTS */
           is_private = TRUE;
           caps = gst_caps_new_empty_simple ("audio/x-dts");
           break;
-        case DRF_ID_S302M:
+        case GST_MPEGTS_MAKE_REGISTRATION_FOURCC ('B', 'S', 'S', 'D'):
           is_audio = TRUE;
           caps = gst_caps_new_empty_simple ("audio/x-smpte-302m");
           break;
-        case DRF_ID_HEVC:
+        case GST_MPEGTS_MAKE_REGISTRATION_FOURCC ('H', 'E', 'V', 'C'):
           is_video = TRUE;
           caps = gst_caps_new_simple ("video/x-h265",
               "stream-format", G_TYPE_STRING, "byte-stream",
@@ -1214,14 +1213,14 @@ create_pad_for_stream (MpegTSBase * base, MpegTSBaseStream * bstream,
             "alignment", G_TYPE_STRING, "nal", NULL);
       }
       break;
-    case ST_HDV_AUX_V:
+    case GST_MPEGTS_HDV_STREAM_TYPE_AUX_V:
       /* FIXME : Should only be used with specific PMT registration_descriptor */
       /* We don't expose those streams since they're only helper streams */
       /* template = gst_static_pad_template_get (&private_template); */
       /* name = g_strdup_printf ("private_%04x", bstream->pid); */
       /* caps = gst_caps_new_simple ("hdv/aux-v", NULL); */
       break;
-    case ST_HDV_AUX_A:
+    case GST_MPEGTS_HDV_STREAM_TYPE_AUX_A:
       /* FIXME : Should only be used with specific PMT registration_descriptor */
       /* We don't expose those streams since they're only helper streams */
       /* template = gst_static_pad_template_get (&private_template); */
@@ -1258,7 +1257,7 @@ create_pad_for_stream (MpegTSBase * base, MpegTSBaseStream * bstream,
           "stream-format", G_TYPE_STRING, "byte-stream",
           "alignment", G_TYPE_STRING, "nal", NULL);
       break;
-    case ST_VIDEO_DIRAC:
+    case GST_MPEGTS_STREAM_TYPE_VIDEO_DIRAC:
       if (bstream->registration_id == 0x64726163) {
         GST_LOG ("dirac");
         /* dirac in hex */
@@ -1266,14 +1265,14 @@ create_pad_for_stream (MpegTSBase * base, MpegTSBaseStream * bstream,
         caps = gst_caps_new_empty_simple ("video/x-dirac");
       }
       break;
-    case ST_PRIVATE_EA:        /* Try to detect a VC1 stream */
+    case GST_MPEGTS_ATSC_STREAM_TYPE_VIDEO_EA:        /* Try to detect a VC1 stream */
     {
       gboolean is_vc1 = FALSE;
 
       /* Note/FIXME: RP-227 specifies that the registration descriptor
        * for vc1 can also contain other information, such as profile,
        * level, alignment, buffer_size, .... */
-      if (bstream->registration_id == DRF_ID_VC1)
+      if (bstream->registration_id == GST_MPEGTS_MAKE_REGISTRATION_FOURCC ('V', 'C', '-', '1'))
         is_vc1 = TRUE;
       if (!is_vc1) {
         GST_WARNING ("0xea private stream type found but no descriptor "
@@ -1286,7 +1285,7 @@ create_pad_for_stream (MpegTSBase * base, MpegTSBaseStream * bstream,
 
       break;
     }
-    case ST_PS_AUDIO_AC3:
+    case GST_MPEGTS_ATSC_STREAM_TYPE_AUDIO_AC3:
       /* DVB_ENHANCED_AC3 */
       desc =
           mpegts_get_descriptor_from_stream (bstream,
@@ -1301,8 +1300,8 @@ create_pad_for_stream (MpegTSBase * base, MpegTSBaseStream * bstream,
        * OR program is ATSC (GA94)
        * OR stream registration is AC-3
        * then it's regular AC3 */
-      if (bstream->registration_id == DRF_ID_AC3 ||
-          program->registration_id == DRF_ID_GA94 ||
+      if (bstream->registration_id == GST_MPEGTS_MAKE_REGISTRATION_FOURCC ('A', 'C', '-', '3') ||
+          program->registration_id == GST_MPEGTS_MAKE_REGISTRATION_FOURCC ('G', 'A', '9', '4') ||
           mpegts_get_descriptor_from_stream (bstream, GST_MTS_DESC_DVB_AC3)) {
         is_audio = TRUE;
         caps = gst_caps_new_empty_simple ("audio/x-ac3");
@@ -1315,15 +1314,15 @@ create_pad_for_stream (MpegTSBase * base, MpegTSBaseStream * bstream,
       is_audio = TRUE;
       caps = gst_caps_new_empty_simple ("audio/x-ac3");
       break;
-    case ST_PS_AUDIO_DTS:
+    case GST_MPEGTS_STREAM_TYPE_PS_AUDIO_DTS:
       is_audio = TRUE;
       caps = gst_caps_new_empty_simple ("audio/x-dts");
       break;
-    case ST_PS_AUDIO_LPCM:
+    case GST_MPEGTS_STREAM_TYPE_PS_AUDIO_LPCM:
       is_audio = TRUE;
       caps = gst_caps_new_empty_simple ("audio/x-lpcm");
       break;
-    case ST_PS_DVD_SUBPICTURE:
+    case GST_MPEGTS_STREAM_TYPE_PS_DVD_SUBPICTURE:
       is_subpicture = TRUE;
       caps = gst_caps_new_empty_simple ("subpicture/x-dvd");
       sparse = TRUE;
