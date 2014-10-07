@@ -330,6 +330,19 @@ typedef enum {
 } GstMpegtsStreamType;
 
 /**
+ * GstMpegtsMiscStreamType:
+ *
+ * These values correspond to miscellaneous private stream types that are
+ * not yet identified from known specifications.
+ */
+typedef enum {
+    GST_MPEGTS_STREAM_TYPE_PS_AUDIO_DTS      = 0x8a,
+    GST_MPEGTS_STREAM_TYPE_PS_AUDIO_LPCM     = 0x8b,
+    GST_MPEGTS_STREAM_TYPE_PS_DVD_SUBPICTURE = 0xff,
+    GST_MPEGTS_STREAM_TYPE_VIDEO_DIRAC        = 0xd1
+} GstMpegtsMiscStreamType;
+
+/**
  * GstMpegtsPMTStream:
  * @stream_type: the type of stream. See #GstMpegtsStreamType
  * @pid: the PID of the stream
