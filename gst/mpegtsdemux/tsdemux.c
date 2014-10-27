@@ -111,6 +111,8 @@ typedef struct _TSDemuxH264ParsingInfos TSDemuxH264ParsingInfos;
 typedef gboolean (*GstTsDemuxKeyFrameScanFunction) (TSDemuxStream * stream,
     guint8 * data, const gsize data_size, const gsize max_frame_offset);
 
+typedef GstBuffer *(*GstTsDemuxPrepareFunction) (GstBuffer * buf);
+
 typedef struct
 {
   guint8 *data;
@@ -194,6 +196,8 @@ struct _TSDemuxStream
 
   GstTsDemuxKeyFrameScanFunction scan_function;
   TSDemuxH264ParsingInfos h264infos;
+
+  GstTsDemuxPrepareFunction prepare_function;
 };
 
 #define VIDEO_CAPS \
@@ -757,6 +761,52 @@ scan_keyframe_h264 (TSDemuxStream * stream, const guint8 * data,
   return FALSE;
 }
 
+static GstBuffer *
+metadata_AU_wrapper_prepare (GstBuffer * buf)
+{
+  GstBuffer *out_buf;
+  guint8 *data, *odata;
+  gint size, osize;
+  GstMapInfo map, omap;
+
+  gst_buffer_map (buf, &map, GST_MAP_READ);
+  size = map.size;
+  data = map.data;
+  osize = 0;
+
+  if (size < 5) {
+    GST_WARNING ("Metadata AU wrapper size is too small !");
+  } else {
+    gboolean AU_cell_not_fragmented;
+    guint16 AU_cell_size;
+    data+=2;
+    AU_cell_not_fragmented = ((*data++ & 0xC0) == 0xC0);
+    AU_cell_size = GST_READ_UINT16_BE (data);
+    data += 2;
+    if (!AU_cell_not_fragmented || AU_cell_size > 5 + size) {
+      GST_FIXME ("Metadata AU cell is fragmented ! Can't handle this one !");
+    } else {
+      osize = AU_cell_size;
+    }
+  }
+
+  /* outbuf */
+  out_buf = gst_buffer_new_and_alloc (osize);
+  gst_buffer_copy_into (out_buf, buf,
+      GST_BUFFER_COPY_METADATA | GST_BUFFER_COPY_TIMESTAMPS, 5, osize);
+
+  /* copy data */
+  gst_buffer_map (out_buf, &omap, GST_MAP_WRITE);
+  odata = omap.data;
+  memcpy (odata, data, osize);
+
+  /* unmap */
+  gst_buffer_unmap (buf, &map);
+  gst_buffer_unmap (out_buf, &omap);
+
+  return out_buf;
+}
+
 /* We merge data from TS packets so that the scanning methods get a continuous chunk,
  however the scanning method will return keyframe offset which needs to be translated
  back to actual offset in file */
@@ -1216,6 +1266,53 @@ create_pad_for_stream (MpegTSBase * base, MpegTSBaseStream * bstream,
             "alignment", G_TYPE_STRING, "nal", NULL);
       }
       break;
+    case GST_MPEGTS_STREAM_TYPE_METADATA_PES_PACKETS:
+    {
+      GstMpegtsMetadataDescriptor *metadata_desc = NULL;
+      GST_LOG ("metadata PES packets");
+      desc = mpegts_get_descriptor_from_stream (bstream, GST_MTS_DESC_METADATA);
+      if (desc) {
+        GST_LOG ("metadata descriptor");
+        gst_mpegts_descriptor_parse_metadata (desc, &metadata_desc);
+      }
+      template = gst_static_pad_template_get (&private_template);
+      if (metadata_desc) {
+        gchar *application_format, *format;
+        if (metadata_desc->application_format == 0xFFFF) {
+          application_format =
+              g_strdup_printf ("%" GST_MPEGTS_REGISTRATION_FOURCC_FORMAT,
+              GST_MPEGTS_REGISTRATION_FOURCC_ARGS (metadata_desc->
+                  application_format_identifier));
+        } else {
+          application_format =
+              g_strdup_printf ("0x%x", metadata_desc->application_format);
+        }
+        if (metadata_desc->format == 0xFF) {
+          format =
+              g_strdup_printf ("%" GST_MPEGTS_REGISTRATION_FOURCC_FORMAT,
+              GST_MPEGTS_REGISTRATION_FOURCC_ARGS (metadata_desc->
+                  format_identifier));
+        } else {
+          format = g_strdup_printf ("0x%x", metadata_desc->format);
+        }
+        caps = gst_caps_new_simple ("application/x-metadata",
+            metadata_desc->application_format ==
+            0xFFFF ? "application_format_identifier" : "application_format",
+            G_TYPE_STRING, application_format,
+            metadata_desc->format == 0xFF ? "format_identifier" : "format",
+            G_TYPE_STRING, format, NULL);
+        g_free (application_format);
+        g_free (format);
+        gst_mpegts_metadata_descriptor_free (metadata_desc);
+        name =
+            g_strdup_printf ("private_%04x_%01x", bstream->pid,
+            metadata_desc->service_id);
+      } else {
+        name = g_strdup_printf ("private_%04x", bstream->pid);
+        caps = gst_caps_new_simple ("application/x-metadata", NULL, NULL);
+      }
+      break;
+    }
     case GST_MPEGTS_HDV_STREAM_TYPE_AUX_V:
       /* FIXME : Should only be used with specific PMT registration_descriptor */
       /* We don't expose those streams since they're only helper streams */
@@ -1439,6 +1536,13 @@ gst_ts_demux_stream_added (MpegTSBase * base, MpegTSBaseStream * bstream,
       stream->scan_function = NULL;
     }
 
+    if (base->mode != BASE_MODE_PUSHING
+        && bstream->stream_type ==
+        GST_MPEGTS_STREAM_TYPE_METADATA_PES_PACKETS) {
+      stream->prepare_function = metadata_AU_wrapper_prepare;
+    } else {
+      stream->prepare_function = NULL;
+    }
     stream->active = FALSE;
 
     stream->need_newsegment = TRUE;
@@ -2194,6 +2298,14 @@ gst_ts_demux_push_pending_data (GstTSDemux * demux, TSDemuxStream * stream)
       GST_DEBUG ("Not enough information to push buffers yet, storing buffer");
       goto beach;
     }
+  }
+
+  if (stream->prepare_function) {
+    GstBuffer *outbuf;
+    outbuf = stream->prepare_function (buffer);
+    g_assert (outbuf);
+    gst_buffer_unref (buffer);
+    buffer = outbuf;
   }
 
   if (G_UNLIKELY (stream->need_newsegment))
