@@ -1,6 +1,11 @@
 /*
  * gst-isdb-descriptor.h -
- * Copyright (C) 2014, LANGLOIS Florian
+ * Copyright (C) 2013 Edward Hervey
+ * Copyright (C) 2014 Florian Langlois
+ *
+ * Authors:
+ *   Edward Hervey <edward@collabora.com>
+ *   Florian Langlois <chamois94@gmail.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public

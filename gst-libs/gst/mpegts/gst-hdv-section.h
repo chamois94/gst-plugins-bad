@@ -1,7 +1,16 @@
 /*
  * gst-hdv-section.h -
- * Copyright (C) 2014, LANGLOIS Florian
- * 
+ *
+ * The Initial Developer of the Original Code is Fluendo, S.L.
+ * Portions created by Fluendo, S.L. are Copyright (C) 2005
+ * Fluendo, S.L. All Rights Reserved.
+ *
+ * Copyright (C) 2014 Florian Langlois
+ *
+ * Authors:
+ *   Wim Taymans <wim@fluendo.com>
+ *   Florian Langlois <chamois94@gmail.com>
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
  * License as published by the Free Software Foundation; either

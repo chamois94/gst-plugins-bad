@@ -1,5 +1,5 @@
 /*
- * mpegtspacketizer.h - 
+ * gst-dvb-section.h -
  * Copyright (C) 2013 Edward Hervey
  * 
  * Authors:

@@ -1,5 +1,5 @@
 /*
- * mpegtspacketizer.h - 
+ * gstmpegtssection.h -
  * Copyright (C) 2013 Edward Hervey
  * 
  * Authors:

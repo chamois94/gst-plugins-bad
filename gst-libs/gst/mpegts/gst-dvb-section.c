@@ -1,5 +1,5 @@
 /*
- * gstmpegtssection.c -
+ * gst-dvb-section.c -
  * Copyright (C) 2013 Edward Hervey
  * Copyright (C) 2011, Hewlett-Packard Development Company, L.P.
  * Copyright (C) 2007 Alessandro Decina

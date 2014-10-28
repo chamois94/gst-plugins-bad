@@ -1,8 +1,13 @@
 /*
- * mpegtspacketizer.h - 
+ * gst-atsc-section.h -
+ *
+ * Portions created by Fluendo, S.L. are Copyright (C) 2005
+ * Fluendo, S.L. All Rights Reserved.
+ *
  * Copyright (C) 2013 Edward Hervey
  * 
  * Authors:
+ *   Wim Taymans <wim@fluendo.com>
  *   Edward Hervey <edward@collabora.com>
  *
  * This library is free software; you can redistribute it and/or

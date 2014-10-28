@@ -1,5 +1,5 @@
 /*
- * gstmpegtsdescriptor.c - 
+ * gst-dvb-descriptor.c -
  * Copyright (C) 2013 Edward Hervey
  * 
  * Authors:
