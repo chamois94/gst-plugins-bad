@@ -850,31 +850,31 @@ gst_mpegts_find_descriptor (GPtrArray * descriptors, guint8 tag)
  * Returns: %TRUE if parsing succeeded, else %FALSE.
  */
 gboolean
-gst_mpegts_descriptor_parse_video_stream (const GstMpegtsDescriptor *descriptor,
-        GstMpegtsVideoStreamDescriptor *res)
+gst_mpegts_descriptor_parse_video_stream (const GstMpegtsDescriptor *
+    descriptor, GstMpegtsVideoStreamDescriptor * res)
 {
-    guint8 *data;
+  guint8 *data;
 
-    /* Size should be at least 1 byte */
-    __common_desc_checks (descriptor, GST_MTS_DESC_VIDEO_STREAM, 1, FALSE);
+  /* Size should be at least 1 byte */
+  __common_desc_checks (descriptor, GST_MTS_DESC_VIDEO_STREAM, 1, FALSE);
 
-    data = (guint8 *) descriptor->data + 2;
+  data = (guint8 *) descriptor->data + 2;
 
-    res->multiple_frame_rate = ((*data & 0x80) == 0x80);
-    res->frame_rate_code = ((*data & 0x38) >> 3);
-    res->mpeg1_only = ((*data & 0x04) == 0x04);
-    res->constrained_parameter = ((*data & 0x02) == 0x02);
-    res->still_picture = ((*data & 0x01) == 0x01);
+  res->multiple_frame_rate = ((*data & 0x80) == 0x80);
+  res->frame_rate_code = ((*data & 0x38) >> 3);
+  res->mpeg1_only = ((*data & 0x04) == 0x04);
+  res->constrained_parameter = ((*data & 0x02) == 0x02);
+  res->still_picture = ((*data & 0x01) == 0x01);
 
-    if ( res->mpeg1_only && descriptor->length == 3) {
-        data++;
-        res->profile_and_level_indication = *data;
-        data++;
-        res->chroma_format = ((*data & 0xc0) >> 6);
-        res->frame_rate_extension = ((*data & 0x20) == 0x20);
-    }
+  if (res->mpeg1_only && descriptor->length == 3) {
+    data++;
+    res->profile_and_level_indication = *data;
+    data++;
+    res->chroma_format = ((*data & 0xc0) >> 6);
+    res->frame_rate_extension = ((*data & 0x20) == 0x20);
+  }
 
-    return TRUE;
+  return TRUE;
 }
 
 /* GST_MTS_DESC_AUDIO_STREAM (0x03) */
@@ -892,27 +892,25 @@ gst_mpegts_descriptor_parse_video_stream (const GstMpegtsDescriptor *descriptor,
  * Returns: %TRUE if parsing succeeded, else %FALSE.
  */
 gboolean
-gst_mpegts_descriptor_parse_audio_stream (const GstMpegtsDescriptor *descriptor,
-        gboolean    *free_format,
-        gboolean    *id,
-        guint8      *layer,
-        gboolean    *variable_rate_audio_indicator)
+gst_mpegts_descriptor_parse_audio_stream (const GstMpegtsDescriptor *
+    descriptor, gboolean * free_format, gboolean * id, guint8 * layer,
+    gboolean * variable_rate_audio_indicator)
 {
-    guint8 *data;
+  guint8 *data;
 
-    g_return_val_if_fail (free_format != NULL && id != NULL &&
-            layer != NULL && variable_rate_audio_indicator != NULL, FALSE);
-    /* Size should be 1 byte */
-    __common_desc_checks (descriptor, GST_MTS_DESC_AUDIO_STREAM, 1, FALSE);
+  g_return_val_if_fail (free_format != NULL && id != NULL &&
+      layer != NULL && variable_rate_audio_indicator != NULL, FALSE);
+  /* Size should be 1 byte */
+  __common_desc_checks (descriptor, GST_MTS_DESC_AUDIO_STREAM, 1, FALSE);
 
-    data = (guint8 *) descriptor->data + 2;
+  data = (guint8 *) descriptor->data + 2;
 
-    *free_format = ((*data & 0x80) == 0x80);
-    *id = ((*data & 0x40) == 0x40);
-    *layer = ((*data & 0x30) >> 4);
-    *variable_rate_audio_indicator = ((*data & 0x08) == 0x08);
+  *free_format = ((*data & 0x80) == 0x80);
+  *id = ((*data & 0x40) == 0x40);
+  *layer = ((*data & 0x30) >> 4);
+  *variable_rate_audio_indicator = ((*data & 0x08) == 0x08);
 
-    return TRUE;
+  return TRUE;
 }
 
 /* GST_MTS_DESC_HIERARCHY (0x04) */
@@ -932,30 +930,30 @@ gst_mpegts_descriptor_parse_audio_stream (const GstMpegtsDescriptor *descriptor,
  * Returns: %TRUE if parsing succeeded, else %FALSE.
  */
 gboolean
-gst_mpegts_descriptor_parse_hierarchy (const GstMpegtsDescriptor *descriptor,
-        guint8  *hierarchy_type,
-        guint8  *hierarchy_layer_index,
-        guint8  *hierarchy_embedded_layer_index,
-        guint8  *hierarchy_channel)
+gst_mpegts_descriptor_parse_hierarchy (const GstMpegtsDescriptor * descriptor,
+    guint8 * hierarchy_type,
+    guint8 * hierarchy_layer_index,
+    guint8 * hierarchy_embedded_layer_index, guint8 * hierarchy_channel)
 {
-    guint8 *data;
+  guint8 *data;
 
-    g_return_val_if_fail (hierarchy_type != NULL && hierarchy_layer_index != NULL &&
-            hierarchy_embedded_layer_index != NULL && hierarchy_channel != NULL, FALSE);
-    /* Size should be 4 bytes */
-    __common_desc_checks (descriptor, GST_MTS_DESC_HIERARCHY, 4, FALSE);
+  g_return_val_if_fail (hierarchy_type != NULL && hierarchy_layer_index != NULL
+      && hierarchy_embedded_layer_index != NULL
+      && hierarchy_channel != NULL, FALSE);
+  /* Size should be 4 bytes */
+  __common_desc_checks (descriptor, GST_MTS_DESC_HIERARCHY, 4, FALSE);
 
-    data = (guint8 *) descriptor->data + 2;
+  data = (guint8 *) descriptor->data + 2;
 
-    *hierarchy_type = ((*data & 0x0f));
-    data++;
-    *hierarchy_layer_index = ((*data & 0x3f));
-    data++;
-    *hierarchy_embedded_layer_index = ((*data & 0x3f));
-    data++;
-    *hierarchy_channel = ((*data & 0x3f));
+  *hierarchy_type = ((*data & 0x0f));
+  data++;
+  *hierarchy_layer_index = ((*data & 0x3f));
+  data++;
+  *hierarchy_embedded_layer_index = ((*data & 0x3f));
+  data++;
+  *hierarchy_channel = ((*data & 0x3f));
 
-    return TRUE;
+  return TRUE;
 }
 
 /* GST_MTS_DESC_REGISTRATION (0x05) */
@@ -972,28 +970,28 @@ gst_mpegts_descriptor_parse_hierarchy (const GstMpegtsDescriptor *descriptor,
  * Returns: %TRUE if parsing succeeded, else %FALSE.
  */
 gboolean
-gst_mpegts_descriptor_parse_registration (const GstMpegtsDescriptor *descriptor,
-                      guint32 *format_identifier,
-                      guint8 **additional_identification_info,
-                      gsize *additional_identification_info_size)
+gst_mpegts_descriptor_parse_registration (const GstMpegtsDescriptor *
+    descriptor, guint32 * format_identifier,
+    guint8 ** additional_identification_info,
+    gsize * additional_identification_info_size)
 {
-    guint8 *data;
+  guint8 *data;
 
-    g_return_val_if_fail (descriptor != NULL && format_identifier != NULL, FALSE);
-    /* Size should be at least 4 bytes */
-    __common_desc_checks (descriptor, GST_MTS_DESC_REGISTRATION, 4, FALSE);
+  g_return_val_if_fail (descriptor != NULL && format_identifier != NULL, FALSE);
+  /* Size should be at least 4 bytes */
+  __common_desc_checks (descriptor, GST_MTS_DESC_REGISTRATION, 4, FALSE);
 
-    data = (guint8 *) descriptor->data + 2;
+  data = (guint8 *) descriptor->data + 2;
 
-    *format_identifier = GST_READ_UINT32_BE(data);
+  *format_identifier = GST_READ_UINT32_BE (data);
 
-    data += 4;
-    if (additional_identification_info && additional_identification_info_size) {
-      *additional_identification_info = data;
-      *additional_identification_info_size = descriptor->length - 4;
-    }
+  data += 4;
+  if (additional_identification_info && additional_identification_info_size) {
+    *additional_identification_info = data;
+    *additional_identification_info_size = descriptor->length - 4;
+  }
 
-    return TRUE;
+  return TRUE;
 }
 
 /**
@@ -1038,7 +1036,8 @@ GstMpegtsDescriptor *
 gst_mpegts_descriptor_from_registration_int (guint32 format_identifier,
     guint8 * additional_info, gsize additional_info_length)
 {
-    return gst_mpegts_descriptor_from_registration((const gchar*)&format_identifier,additional_info,additional_info_length);
+  return gst_mpegts_descriptor_from_registration ((const gchar *)
+      &format_identifier, additional_info, additional_info_length);
 }
 
 /* GST_MTS_DESC_DATA_STREAM_ALIGNMENT (0x06) */
@@ -1052,20 +1051,22 @@ gst_mpegts_descriptor_from_registration_int (guint32 format_identifier,
  *
  * Returns: %TRUE if parsing succeeded, else %FALSE.
  */
-gboolean  gst_mpegts_descriptor_parse_data_stream_alignment (const GstMpegtsDescriptor *descriptor,
-                      guint8 *alignment_type)
+gboolean
+gst_mpegts_descriptor_parse_data_stream_alignment (const GstMpegtsDescriptor *
+    descriptor, guint8 * alignment_type)
 {
-    guint8 *data;
+  guint8 *data;
 
-    g_return_val_if_fail (alignment_type != NULL, FALSE);
-    /* Size should be 1 byte */
-    __common_desc_checks (descriptor, GST_MTS_DESC_DATA_STREAM_ALIGNMENT, 1, FALSE);
+  g_return_val_if_fail (alignment_type != NULL, FALSE);
+  /* Size should be 1 byte */
+  __common_desc_checks (descriptor, GST_MTS_DESC_DATA_STREAM_ALIGNMENT, 1,
+      FALSE);
 
-    data = (guint8 *) descriptor->data + 2;
+  data = (guint8 *) descriptor->data + 2;
 
-    *alignment_type = *data;
+  *alignment_type = *data;
 
-    return TRUE;
+  return TRUE;
 }
 
 /* GST_MTS_DESC_TARGET_BACKGROUND_GRID (0x07) */
@@ -1081,25 +1082,27 @@ gboolean  gst_mpegts_descriptor_parse_data_stream_alignment (const GstMpegtsDesc
  *
  * Returns: %TRUE if parsing succeeded, else %FALSE.
  */
-gboolean  gst_mpegts_descriptor_parse_background_grid (const GstMpegtsDescriptor *descriptor,
-                      guint16 *horizontal_size,
-                      guint16 *vertical_size,
-                      guint8  *aspect_ratio_information)
+gboolean
+gst_mpegts_descriptor_parse_background_grid (const GstMpegtsDescriptor *
+    descriptor, guint16 * horizontal_size, guint16 * vertical_size,
+    guint8 * aspect_ratio_information)
 {
-    guint8 *data;
+  guint8 *data;
 
-    g_return_val_if_fail (horizontal_size != NULL && vertical_size != NULL && aspect_ratio_information != NULL, FALSE);
-    /* Size should be 4 bytes */
-    __common_desc_checks (descriptor, GST_MTS_DESC_DATA_STREAM_ALIGNMENT, 4, FALSE);
+  g_return_val_if_fail (horizontal_size != NULL && vertical_size != NULL
+      && aspect_ratio_information != NULL, FALSE);
+  /* Size should be 4 bytes */
+  __common_desc_checks (descriptor, GST_MTS_DESC_DATA_STREAM_ALIGNMENT, 4,
+      FALSE);
 
-    data = (guint8 *) descriptor->data + 2;
+  data = (guint8 *) descriptor->data + 2;
 
-    *horizontal_size = (GST_READ_UINT16_BE (data) >> 2);
-    *vertical_size = ((GST_READ_UINT32_BE (data) & 0x0003fff0) >> 4);
-    data+= 3;
-    *aspect_ratio_information = (*data & 0x0f);
+  *horizontal_size = (GST_READ_UINT16_BE (data) >> 2);
+  *vertical_size = ((GST_READ_UINT32_BE (data) & 0x0003fff0) >> 4);
+  data += 3;
+  *aspect_ratio_information = (*data & 0x0f);
 
-    return TRUE;
+  return TRUE;
 }
 
 /* GST_MTS_DESC_VIDEO_WINDOW (0x08) */
@@ -1115,25 +1118,27 @@ gboolean  gst_mpegts_descriptor_parse_background_grid (const GstMpegtsDescriptor
  *
  * Returns: %TRUE if parsing succeeded, else %FALSE.
  */
-gboolean  gst_mpegts_descriptor_parse_video_window (const GstMpegtsDescriptor *descriptor,
-                      guint16 *horizontal_offset,
-                      guint16 *vertical_offset,
-                      guint8  *window_priority)
+gboolean
+gst_mpegts_descriptor_parse_video_window (const GstMpegtsDescriptor *
+    descriptor, guint16 * horizontal_offset, guint16 * vertical_offset,
+    guint8 * window_priority)
 {
-    guint8 *data;
+  guint8 *data;
 
-    g_return_val_if_fail (horizontal_offset != NULL && vertical_offset != NULL && window_priority != NULL, FALSE);
-    /* Size should be 4 bytes */
-    __common_desc_checks (descriptor, GST_MTS_DESC_DATA_STREAM_ALIGNMENT, 4, FALSE);
+  g_return_val_if_fail (horizontal_offset != NULL && vertical_offset != NULL
+      && window_priority != NULL, FALSE);
+  /* Size should be 4 bytes */
+  __common_desc_checks (descriptor, GST_MTS_DESC_DATA_STREAM_ALIGNMENT, 4,
+      FALSE);
 
-    data = (guint8 *) descriptor->data + 2;
+  data = (guint8 *) descriptor->data + 2;
 
-    *horizontal_offset = (GST_READ_UINT16_BE (data) >> 2);
-    *vertical_offset = ((GST_READ_UINT32_BE (data) & 0x0003fff0) >> 4);
-    data+= 3;
-    *window_priority = (*data & 0x0f);
+  *horizontal_offset = (GST_READ_UINT16_BE (data) >> 2);
+  *vertical_offset = ((GST_READ_UINT32_BE (data) & 0x0003fff0) >> 4);
+  data += 3;
+  *window_priority = (*data & 0x0f);
 
-    return TRUE;
+  return TRUE;
 }
 
 /* GST_MTS_DESC_CA (0x09) */
@@ -1322,25 +1327,28 @@ gst_mpegts_descriptor_parse_iso_639_language_nb (const GstMpegtsDescriptor *
  *
  * Returns: %TRUE if parsing succeeded, else %FALSE.
  */
-gboolean  gst_mpegts_descriptor_parse_system_clock (const GstMpegtsDescriptor *descriptor,
-                      gboolean *external_clock_reference_indicator,
-                      guint8   *clock_accuracy_integer,
-                      guint8   *clock_accuracy_exponent)
+gboolean
+gst_mpegts_descriptor_parse_system_clock (const GstMpegtsDescriptor *
+    descriptor, gboolean * external_clock_reference_indicator,
+    guint8 * clock_accuracy_integer, guint8 * clock_accuracy_exponent)
 {
-    guint8 *data;
+  guint8 *data;
 
-    g_return_val_if_fail (external_clock_reference_indicator != NULL && clock_accuracy_integer != NULL && clock_accuracy_exponent != NULL, FALSE);
-    /* Size should be 2 bytes */
-    __common_desc_checks (descriptor, GST_MTS_DESC_DATA_STREAM_ALIGNMENT, 2, FALSE);
+  g_return_val_if_fail (external_clock_reference_indicator != NULL
+      && clock_accuracy_integer != NULL
+      && clock_accuracy_exponent != NULL, FALSE);
+  /* Size should be 2 bytes */
+  __common_desc_checks (descriptor, GST_MTS_DESC_DATA_STREAM_ALIGNMENT, 2,
+      FALSE);
 
-    data = (guint8 *) descriptor->data + 2;
+  data = (guint8 *) descriptor->data + 2;
 
-    *external_clock_reference_indicator = ((*data & 0x80) == 0x80);
-    *clock_accuracy_integer = (*data & 0x3f);
-    data++;
-    *clock_accuracy_exponent = ((*data & 0xe0) >> 5);
+  *external_clock_reference_indicator = ((*data & 0x80) == 0x80);
+  *clock_accuracy_integer = (*data & 0x3f);
+  data++;
+  *clock_accuracy_exponent = ((*data & 0xe0) >> 5);
 
-    return TRUE;
+  return TRUE;
 }
 
 /* GST_MTS_DESC_MULTIPLEX_BUFFER_UTILIZATION (0x0C) */
@@ -1356,25 +1364,27 @@ gboolean  gst_mpegts_descriptor_parse_system_clock (const GstMpegtsDescriptor *d
  *
  * Returns: %TRUE if parsing succeeded, else %FALSE.
  */
-gboolean  gst_mpegts_descriptor_parse_multiplex_buffer_utilization (const GstMpegtsDescriptor *descriptor,
-                      gboolean *bound_valid,
-                      guint16   *LTW_offset_lower_bound,
-                      guint16   *LTW_offset_upper_bound)
+gboolean
+gst_mpegts_descriptor_parse_multiplex_buffer_utilization (const
+    GstMpegtsDescriptor * descriptor, gboolean * bound_valid,
+    guint16 * LTW_offset_lower_bound, guint16 * LTW_offset_upper_bound)
 {
-    guint8 *data;
+  guint8 *data;
 
-    g_return_val_if_fail (bound_valid != NULL && LTW_offset_lower_bound != NULL && LTW_offset_upper_bound != NULL, FALSE);
-    /* Size should be 4 bytes */
-    __common_desc_checks (descriptor, GST_MTS_DESC_DATA_STREAM_ALIGNMENT, 4, FALSE);
+  g_return_val_if_fail (bound_valid != NULL && LTW_offset_lower_bound != NULL
+      && LTW_offset_upper_bound != NULL, FALSE);
+  /* Size should be 4 bytes */
+  __common_desc_checks (descriptor, GST_MTS_DESC_DATA_STREAM_ALIGNMENT, 4,
+      FALSE);
 
-    data = (guint8 *) descriptor->data + 2;
+  data = (guint8 *) descriptor->data + 2;
 
-    *bound_valid = ((*data & 0x80) == 0x80);
-    *LTW_offset_lower_bound = (GST_READ_UINT16_BE (data) & 0x7fff);
-    data += 2;
-    *LTW_offset_upper_bound = (GST_READ_UINT16_BE (data) & 0x7fff);
+  *bound_valid = ((*data & 0x80) == 0x80);
+  *LTW_offset_lower_bound = (GST_READ_UINT16_BE (data) & 0x7fff);
+  data += 2;
+  *LTW_offset_upper_bound = (GST_READ_UINT16_BE (data) & 0x7fff);
 
-    return TRUE;
+  return TRUE;
 }
 
 /* GST_MTS_DESC_COPYRIGHT (0x0D) */
@@ -1390,28 +1400,29 @@ gboolean  gst_mpegts_descriptor_parse_multiplex_buffer_utilization (const GstMpe
  *
  * Returns: %TRUE if parsing succeeded, else %FALSE.
  */
-gboolean  gst_mpegts_descriptor_parse_copyright (const GstMpegtsDescriptor *descriptor,
-                      guint32  *copyright_identifier,
-                      const guint8 **additional_copyright_info,
-                      gsize *additional_copyright_info_size)
+gboolean
+gst_mpegts_descriptor_parse_copyright (const GstMpegtsDescriptor * descriptor,
+    guint32 * copyright_identifier,
+    const guint8 ** additional_copyright_info,
+    gsize * additional_copyright_info_size)
 {
-    guint8 *data;
+  guint8 *data;
 
-    g_return_val_if_fail (copyright_identifier != NULL, FALSE);
-    /* Size should be 4 bytes */
-    __common_desc_checks (descriptor, GST_MTS_DESC_COPYRIGHT, 4, FALSE);
+  g_return_val_if_fail (copyright_identifier != NULL, FALSE);
+  /* Size should be 4 bytes */
+  __common_desc_checks (descriptor, GST_MTS_DESC_COPYRIGHT, 4, FALSE);
 
-    data = (guint8 *) descriptor->data + 2;
+  data = (guint8 *) descriptor->data + 2;
 
-    *copyright_identifier = GST_READ_UINT32_BE (data);
+  *copyright_identifier = GST_READ_UINT32_BE (data);
 
-    data += 4;
-    if (additional_copyright_info && additional_copyright_info_size) {
-      *additional_copyright_info = data;
-      *additional_copyright_info_size = descriptor->length - 4;
-    }
+  data += 4;
+  if (additional_copyright_info && additional_copyright_info_size) {
+    *additional_copyright_info = data;
+    *additional_copyright_info_size = descriptor->length - 4;
+  }
 
-    return TRUE;
+  return TRUE;
 }
 
 /* GST_MTS_DESC_MAXIMUM_BITRATE (0x0E) */
@@ -1425,21 +1436,22 @@ gboolean  gst_mpegts_descriptor_parse_copyright (const GstMpegtsDescriptor *desc
  *
  * Returns: %TRUE if parsing succeeded, else %FALSE.
  */
-gboolean  gst_mpegts_descriptor_parse_maximum_bitrate (const GstMpegtsDescriptor *descriptor,
-                      guint32  *maximum_bitrate)
+gboolean
+gst_mpegts_descriptor_parse_maximum_bitrate (const GstMpegtsDescriptor *
+    descriptor, guint32 * maximum_bitrate)
 {
-    guint8 *data;
+  guint8 *data;
 
-    g_return_val_if_fail (maximum_bitrate != NULL, FALSE);
-    /* Size should be 3 bytes */
-    __common_desc_checks (descriptor, GST_MTS_DESC_MAXIMUM_BITRATE, 3, FALSE);
+  g_return_val_if_fail (maximum_bitrate != NULL, FALSE);
+  /* Size should be 3 bytes */
+  __common_desc_checks (descriptor, GST_MTS_DESC_MAXIMUM_BITRATE, 3, FALSE);
 
-    data = (guint8 *) descriptor->data + 2;
+  data = (guint8 *) descriptor->data + 2;
 
-    *maximum_bitrate = (((((guint32)*data) & 0x3f) << 16) |
-                       GST_READ_UINT16_BE (data+1));
+  *maximum_bitrate = (((((guint32) * data) & 0x3f) << 16) |
+      GST_READ_UINT16_BE (data + 1));
 
-    return TRUE;
+  return TRUE;
 }
 
 /* GST_MTS_DESC_PRIVATE_DATA_INDICATOR (0x0F) */
@@ -1453,20 +1465,22 @@ gboolean  gst_mpegts_descriptor_parse_maximum_bitrate (const GstMpegtsDescriptor
  *
  * Returns: %TRUE if parsing succeeded, else %FALSE.
  */
-gboolean  gst_mpegts_descriptor_parse_private_data_indicator (const GstMpegtsDescriptor *descriptor,
-                      guint32  *indicator)
+gboolean
+gst_mpegts_descriptor_parse_private_data_indicator (const GstMpegtsDescriptor *
+    descriptor, guint32 * indicator)
 {
-    guint8 *data;
+  guint8 *data;
 
-    g_return_val_if_fail (indicator != NULL, FALSE);
-    /* Size should be 4 bytes */
-    __common_desc_checks (descriptor, GST_MTS_DESC_PRIVATE_DATA_INDICATOR, 4, FALSE);
+  g_return_val_if_fail (indicator != NULL, FALSE);
+  /* Size should be 4 bytes */
+  __common_desc_checks (descriptor, GST_MTS_DESC_PRIVATE_DATA_INDICATOR, 4,
+      FALSE);
 
-    data = (guint8 *) descriptor->data + 2;
+  data = (guint8 *) descriptor->data + 2;
 
-    *indicator = GST_READ_UINT32_BE (data);
+  *indicator = GST_READ_UINT32_BE (data);
 
-    return TRUE;
+  return TRUE;
 }
 
 /* GST_MTS_DESC_SMOOTHING_BUFFER (0x10) */
@@ -1481,26 +1495,26 @@ gboolean  gst_mpegts_descriptor_parse_private_data_indicator (const GstMpegtsDes
  *
  * Returns: %TRUE if parsing succeeded, else %FALSE.
  */
-gboolean  gst_mpegts_descriptor_parse_smoothing_buffer (const GstMpegtsDescriptor *descriptor,
-                      guint32  *sb_leak_rate,
-                      guint32  *sb_size)
+gboolean
+gst_mpegts_descriptor_parse_smoothing_buffer (const GstMpegtsDescriptor *
+    descriptor, guint32 * sb_leak_rate, guint32 * sb_size)
 {
-    guint8 *data;
+  guint8 *data;
 
-    g_return_val_if_fail (sb_leak_rate != NULL && sb_size != NULL, FALSE);
-    /* Size should be 6 bytes */
-    __common_desc_checks (descriptor, GST_MTS_DESC_SMOOTHING_BUFFER, 6, FALSE);
+  g_return_val_if_fail (sb_leak_rate != NULL && sb_size != NULL, FALSE);
+  /* Size should be 6 bytes */
+  __common_desc_checks (descriptor, GST_MTS_DESC_SMOOTHING_BUFFER, 6, FALSE);
 
-    data = (guint8 *) descriptor->data + 2;
+  data = (guint8 *) descriptor->data + 2;
 
-    *sb_leak_rate = (((((guint32)*data) & 0x3f) << 16) |
-                       GST_READ_UINT16_BE (data+1));
+  *sb_leak_rate = (((((guint32) * data) & 0x3f) << 16) |
+      GST_READ_UINT16_BE (data + 1));
 
-    data += 3;
-    *sb_size = (((((guint32)*data) & 0x3f) << 16) |
-                       GST_READ_UINT16_BE (data+1));
+  data += 3;
+  *sb_size = (((((guint32) * data) & 0x3f) << 16) |
+      GST_READ_UINT16_BE (data + 1));
 
-    return TRUE;
+  return TRUE;
 }
 
 /* GST_MTS_DESC_STD (0x11) */
@@ -1514,20 +1528,21 @@ gboolean  gst_mpegts_descriptor_parse_smoothing_buffer (const GstMpegtsDescripto
  *
  * Returns: %TRUE if parsing succeeded, else %FALSE.
  */
-gboolean  gst_mpegts_descriptor_parse_std (const GstMpegtsDescriptor *descriptor,
-                      gboolean  *leak_valid)
+gboolean
+gst_mpegts_descriptor_parse_std (const GstMpegtsDescriptor * descriptor,
+    gboolean * leak_valid)
 {
-    guint8 *data;
+  guint8 *data;
 
-    g_return_val_if_fail (leak_valid != NULL, FALSE);
-    /* Size should be 1 byte */
-    __common_desc_checks (descriptor, GST_MTS_DESC_STD, 1, FALSE);
+  g_return_val_if_fail (leak_valid != NULL, FALSE);
+  /* Size should be 1 byte */
+  __common_desc_checks (descriptor, GST_MTS_DESC_STD, 1, FALSE);
 
-    data = (guint8 *) descriptor->data + 2;
+  data = (guint8 *) descriptor->data + 2;
 
-    *leak_valid = ((*data & 0x01) == 0x01);
+  *leak_valid = ((*data & 0x01) == 0x01);
 
-    return TRUE;
+  return TRUE;
 }
 
 /* GST_MTS_DESC_IBP (0x12) */
@@ -1543,31 +1558,33 @@ gboolean  gst_mpegts_descriptor_parse_std (const GstMpegtsDescriptor *descriptor
  *
  * Returns: %TRUE if parsing succeeded, else %FALSE.
  */
-gboolean  gst_mpegts_descriptor_parse_ibp (const GstMpegtsDescriptor *descriptor,
-                      gboolean  *closed_gop,
-                      gboolean  *identical_gop,
-                      guint16   *max_gop_length)
+gboolean
+gst_mpegts_descriptor_parse_ibp (const GstMpegtsDescriptor * descriptor,
+    gboolean * closed_gop, gboolean * identical_gop, guint16 * max_gop_length)
 {
-    guint8 *data;
+  guint8 *data;
 
-    g_return_val_if_fail (closed_gop != NULL && identical_gop != NULL && max_gop_length != NULL, FALSE);
-    /* Size should be 2 bytes */
-    __common_desc_checks (descriptor, GST_MTS_DESC_IBP, 2, FALSE);
+  g_return_val_if_fail (closed_gop != NULL && identical_gop != NULL
+      && max_gop_length != NULL, FALSE);
+  /* Size should be 2 bytes */
+  __common_desc_checks (descriptor, GST_MTS_DESC_IBP, 2, FALSE);
 
-    data = (guint8 *) descriptor->data + 2;
+  data = (guint8 *) descriptor->data + 2;
 
-    *closed_gop = ((*data & 0x80) == 0x80);
-    *identical_gop = ((*data & 0x40) == 0x40);
-    *max_gop_length = (GST_READ_UINT16_BE (data) & 0x3fff);
+  *closed_gop = ((*data & 0x80) == 0x80);
+  *identical_gop = ((*data & 0x40) == 0x40);
+  *max_gop_length = (GST_READ_UINT16_BE (data) & 0x3fff);
 
-    return TRUE;
+  return TRUE;
 }
 
 /* GST_MTS_DESC_CONTENT_LABELING (0x24) */
 
-void gst_mpegts_content_labeling_descriptor_free (GstMpegtsContentLabelingDescriptor * desc)
+void
+gst_mpegts_content_labeling_descriptor_free (GstMpegtsContentLabelingDescriptor
+    * desc)
 {
-    g_slice_free (GstMpegtsContentLabelingDescriptor, desc);
+  g_slice_free (GstMpegtsContentLabelingDescriptor, desc);
 }
 
 /**
@@ -1579,44 +1596,47 @@ void gst_mpegts_content_labeling_descriptor_free (GstMpegtsContentLabelingDescri
  *
  * Returns: %TRUE if parsing succeeded, else %FALSE.
  */
-gboolean  gst_mpegts_descriptor_parse_content_labeling (const GstMpegtsDescriptor *descriptor,
-                      GstMpegtsContentLabelingDescriptor **desc)
+gboolean
+gst_mpegts_descriptor_parse_content_labeling (const GstMpegtsDescriptor *
+    descriptor, GstMpegtsContentLabelingDescriptor ** desc)
 {
-    guint8 *data;
-    GstMpegtsContentLabelingDescriptor *res;
+  guint8 *data;
+  GstMpegtsContentLabelingDescriptor *res;
 
-    g_return_val_if_fail (desc != NULL, FALSE);
-    /* Size should be at least 2 bytes */
-    __common_desc_checks (descriptor, GST_MTS_DESC_CONTENT_LABELING, 2, FALSE);
+  g_return_val_if_fail (desc != NULL, FALSE);
+  /* Size should be at least 2 bytes */
+  __common_desc_checks (descriptor, GST_MTS_DESC_CONTENT_LABELING, 2, FALSE);
 
-    data = (guint8 *) descriptor->data + 2;
+  data = (guint8 *) descriptor->data + 2;
 
-    res = g_slice_new0 (GstMpegtsContentLabelingDescriptor);
+  res = g_slice_new0 (GstMpegtsContentLabelingDescriptor);
 
-    res->application_format = (GST_READ_UINT16_BE (data));
-    data += 2;
+  res->application_format = (GST_READ_UINT16_BE (data));
+  data += 2;
 
-    if ( res->application_format == 0xFFFF && descriptor->length < 6 )
-        goto error;
-    else {
-        res->application_format_identifier = (GST_READ_UINT32_BE (data));
-        data += 4;
-    }
+  if (res->application_format == 0xFFFF && descriptor->length < 6)
+    goto error;
+  else {
+    res->application_format_identifier = (GST_READ_UINT32_BE (data));
+    data += 4;
+  }
 
-    *desc = res;
+  *desc = res;
 
-    return TRUE;
+  return TRUE;
 
 error:
-    g_slice_free(GstMpegtsContentLabelingDescriptor, res);
-    return FALSE;
+  g_slice_free (GstMpegtsContentLabelingDescriptor, res);
+  return FALSE;
 }
 
 /* GST_MTS_DESC_METADATA_POINTER (0x25) */
 
-void gst_mpegts_metadata_pointer_descriptor_free (GstMpegtsMetadataPointerDescriptor * desc)
+void
+gst_mpegts_metadata_pointer_descriptor_free (GstMpegtsMetadataPointerDescriptor
+    * desc)
 {
-    g_slice_free (GstMpegtsMetadataPointerDescriptor, desc);
+  g_slice_free (GstMpegtsMetadataPointerDescriptor, desc);
 }
 
 /**
@@ -1628,68 +1648,72 @@ void gst_mpegts_metadata_pointer_descriptor_free (GstMpegtsMetadataPointerDescri
  *
  * Returns: %TRUE if parsing succeeded, else %FALSE.
  */
-gboolean  gst_mpegts_descriptor_metadata_pointer (const GstMpegtsDescriptor *descriptor,
-        GstMpegtsMetadataPointerDescriptor **desc)
+gboolean
+gst_mpegts_descriptor_metadata_pointer (const GstMpegtsDescriptor * descriptor,
+    GstMpegtsMetadataPointerDescriptor ** desc)
 {
-    guint8 *data;
-    GstMpegtsMetadataPointerDescriptor *res;
-    guint32 length;
+  guint8 *data;
+  GstMpegtsMetadataPointerDescriptor *res;
+  guint32 length;
 
-    g_return_val_if_fail (desc != NULL, FALSE);
-    /* Size should be at least 4 bytes */
-    __common_desc_checks (descriptor, GST_MTS_DESC_METADATA_POINTER, 4, FALSE);
+  g_return_val_if_fail (desc != NULL, FALSE);
+  /* Size should be at least 4 bytes */
+  __common_desc_checks (descriptor, GST_MTS_DESC_METADATA_POINTER, 4, FALSE);
 
-    data = (guint8 *) descriptor->data + 2;
-    length = descriptor->length;
+  data = (guint8 *) descriptor->data + 2;
+  length = descriptor->length;
 
-    res = g_slice_new0 (GstMpegtsMetadataPointerDescriptor);
+  res = g_slice_new0 (GstMpegtsMetadataPointerDescriptor);
 
-    res->application_format = (GST_READ_UINT16_BE (data));
-    data += 2;
-    length -= 2;
+  res->application_format = (GST_READ_UINT16_BE (data));
+  data += 2;
+  length -= 2;
 
-    if ( res->application_format == 0xFFFF ) {
-        if ( length < 4) {
-            goto error;
-        } else {
-            res->application_format_identifier = (GST_READ_UINT32_BE (data));
-            data += 4;
-            length -= 4;
-        }
+  if (res->application_format == 0xFFFF) {
+    if (length < 4) {
+      goto error;
+    } else {
+      res->application_format_identifier = (GST_READ_UINT32_BE (data));
+      data += 4;
+      length -= 4;
     }
+  }
 
-    if ( length < 1 ) goto error;
-    res->format = *data;
-    data++;
-    length--;
+  if (length < 1)
+    goto error;
+  res->format = *data;
+  data++;
+  length--;
 
-    if ( res->format == 0xFF ) {
-        if ( length < 4 ) {
-            goto error;
-        } else {
-            res->format_identifier = (GST_READ_UINT32_BE (data));
-            data += 4;
-            length -= 4;
-        }
+  if (res->format == 0xFF) {
+    if (length < 4) {
+      goto error;
+    } else {
+      res->format_identifier = (GST_READ_UINT32_BE (data));
+      data += 4;
+      length -= 4;
     }
+  }
 
-    if ( length < 1 ) goto error;
-    res->service_id = *data;
+  if (length < 1)
+    goto error;
+  res->service_id = *data;
 
-    *desc = res;
+  *desc = res;
 
-    return TRUE;
+  return TRUE;
 
 error:
-    g_slice_free(GstMpegtsMetadataPointerDescriptor, res);
-    return FALSE;
+  g_slice_free (GstMpegtsMetadataPointerDescriptor, res);
+  return FALSE;
 }
 
 /* GST_MTS_DESC_METADATA (0x26) */
 
-void gst_mpegts_metadata_descriptor_free (GstMpegtsMetadataDescriptor * desc)
+void
+gst_mpegts_metadata_descriptor_free (GstMpegtsMetadataDescriptor * desc)
 {
-    g_slice_free (GstMpegtsMetadataDescriptor, desc);
+  g_slice_free (GstMpegtsMetadataDescriptor, desc);
 }
 
 /**
@@ -1701,68 +1725,72 @@ void gst_mpegts_metadata_descriptor_free (GstMpegtsMetadataDescriptor * desc)
  *
  * Returns: %TRUE if parsing succeeded, else %FALSE.
  */
-gboolean  gst_mpegts_descriptor_parse_metadata (const GstMpegtsDescriptor *descriptor,
-                      GstMpegtsMetadataDescriptor **desc)
+gboolean
+gst_mpegts_descriptor_parse_metadata (const GstMpegtsDescriptor * descriptor,
+    GstMpegtsMetadataDescriptor ** desc)
 {
-    guint8 *data;
-    GstMpegtsMetadataDescriptor *res;
-    guint32 length;
+  guint8 *data;
+  GstMpegtsMetadataDescriptor *res;
+  guint32 length;
 
-    g_return_val_if_fail (desc != NULL, FALSE);
-    /* Size should be at least 4 bytes */
-    __common_desc_checks (descriptor, GST_MTS_DESC_METADATA, 4, FALSE);
+  g_return_val_if_fail (desc != NULL, FALSE);
+  /* Size should be at least 4 bytes */
+  __common_desc_checks (descriptor, GST_MTS_DESC_METADATA, 4, FALSE);
 
-    data = (guint8 *) descriptor->data + 2;
-    length = descriptor->length;
+  data = (guint8 *) descriptor->data + 2;
+  length = descriptor->length;
 
-    res = g_slice_new0 (GstMpegtsMetadataDescriptor);
+  res = g_slice_new0 (GstMpegtsMetadataDescriptor);
 
-    res->application_format = (GST_READ_UINT16_BE (data));
-    data += 2;
-    length -= 2;
+  res->application_format = (GST_READ_UINT16_BE (data));
+  data += 2;
+  length -= 2;
 
-    if ( res->application_format == 0xFFFF ) {
-        if ( length < 4) {
-            goto error;
-        } else {
-            res->application_format_identifier = (GST_READ_UINT32_BE (data));
-            data += 4;
-            length -= 4;
-        }
+  if (res->application_format == 0xFFFF) {
+    if (length < 4) {
+      goto error;
+    } else {
+      res->application_format_identifier = (GST_READ_UINT32_BE (data));
+      data += 4;
+      length -= 4;
     }
+  }
 
-    if ( length < 1 ) goto error;
-    res->format = *data;
-    data++;
-    length--;
+  if (length < 1)
+    goto error;
+  res->format = *data;
+  data++;
+  length--;
 
-    if ( res->format == 0xFF ) {
-        if ( length < 4 ) {
-            goto error;
-        } else {
-            res->format_identifier = (GST_READ_UINT32_BE (data));
-            data += 4;
-            length -= 4;
-        }
+  if (res->format == 0xFF) {
+    if (length < 4) {
+      goto error;
+    } else {
+      res->format_identifier = (GST_READ_UINT32_BE (data));
+      data += 4;
+      length -= 4;
     }
+  }
 
-    if ( length < 1 ) goto error;
-    res->service_id = *data;
+  if (length < 1)
+    goto error;
+  res->service_id = *data;
 
-    *desc = res;
+  *desc = res;
 
-    return TRUE;
+  return TRUE;
 
 error:
-    g_slice_free(GstMpegtsMetadataDescriptor, res);
-    return FALSE;
+  g_slice_free (GstMpegtsMetadataDescriptor, res);
+  return FALSE;
 }
 
 /* GST_MTS_DESC_METADATA_STD (0x27) */
 
-void gst_mpegts_metadata_STD_descriptor_free (GstMpegtsMetadataSTDDescriptor * desc)
+void
+gst_mpegts_metadata_STD_descriptor_free (GstMpegtsMetadataSTDDescriptor * desc)
 {
-    g_slice_free (GstMpegtsMetadataSTDDescriptor, desc);
+  g_slice_free (GstMpegtsMetadataSTDDescriptor, desc);
 }
 
 /**
@@ -1774,34 +1802,35 @@ void gst_mpegts_metadata_STD_descriptor_free (GstMpegtsMetadataSTDDescriptor * d
  *
  * Returns: %TRUE if parsing succeeded, else %FALSE.
  */
-gboolean  gst_mpegts_descriptor_parse_metadata_STD (const GstMpegtsDescriptor *descriptor,
-                      GstMpegtsMetadataSTDDescriptor **desc)
+gboolean
+gst_mpegts_descriptor_parse_metadata_STD (const GstMpegtsDescriptor *
+    descriptor, GstMpegtsMetadataSTDDescriptor ** desc)
 {
-    guint8 *data;
-    GstMpegtsMetadataSTDDescriptor *res;
+  guint8 *data;
+  GstMpegtsMetadataSTDDescriptor *res;
 
-    g_return_val_if_fail (desc != NULL, FALSE);
-    /* Size should be at least 9 bytes */
-    __common_desc_checks (descriptor, GST_MTS_DESC_METADATA_STD, 9, FALSE);
+  g_return_val_if_fail (desc != NULL, FALSE);
+  /* Size should be at least 9 bytes */
+  __common_desc_checks (descriptor, GST_MTS_DESC_METADATA_STD, 9, FALSE);
 
-    data = (guint8 *) descriptor->data + 2;
+  data = (guint8 *) descriptor->data + 2;
 
-    res = g_slice_new0 (GstMpegtsMetadataSTDDescriptor);
+  res = g_slice_new0 (GstMpegtsMetadataSTDDescriptor);
 
-    res->input_leak_rate = (((((guint32)*data) & 0x3f) << 16) |
-                       GST_READ_UINT16_BE (data+1));
+  res->input_leak_rate = (((((guint32) * data) & 0x3f) << 16) |
+      GST_READ_UINT16_BE (data + 1));
 
-    data += 3;
-    res->buffer_size = (((((guint32)*data) & 0x3f) << 16) |
-                       GST_READ_UINT16_BE (data+1));
+  data += 3;
+  res->buffer_size = (((((guint32) * data) & 0x3f) << 16) |
+      GST_READ_UINT16_BE (data + 1));
 
-    data += 3;
-    res->output_leak_rate = (((((guint32)*data) & 0x3f) << 16) |
-                       GST_READ_UINT16_BE (data+1));
+  data += 3;
+  res->output_leak_rate = (((((guint32) * data) & 0x3f) << 16) |
+      GST_READ_UINT16_BE (data + 1));
 
-    *desc = res;
+  *desc = res;
 
-    return TRUE;
+  return TRUE;
 }
 
 /**
