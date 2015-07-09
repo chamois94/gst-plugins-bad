@@ -1053,7 +1053,8 @@ create_pad_for_stream (MpegTSBase * base, MpegTSBaseStream * bstream,
 
   /* First handle BluRay-specific stream types since there is some overlap
    * between BluRay and non-BluRay streay type identifiers */
-  if (program->registration_id == GST_MPEGTS_MAKE_REGISTRATION_FOURCC ('H', 'D', 'M', 'V')) {
+  if (program->registration_id == GST_MPEGTS_MAKE_REGISTRATION_FOURCC ('H', 'D',
+          'M', 'V')) {
     switch (bstream->stream_type) {
       case GST_MPEGTS_BD_STREAM_TYPE_AUDIO_AC3:
       {
@@ -1131,7 +1132,8 @@ create_pad_for_stream (MpegTSBase * base, MpegTSBaseStream * bstream,
           gst_caps_new_simple ("audio/mpeg", "mpegversion", G_TYPE_INT, 1,
           NULL);
       /* HDV is always mpeg 1 audio layer 2 */
-      if (program->registration_id == GST_MPEGTS_MAKE_REGISTRATION_FOURCC ('T', 'S', 'H', 'V'))
+      if (program->registration_id == GST_MPEGTS_MAKE_REGISTRATION_FOURCC ('T',
+              'S', 'H', 'V'))
         gst_caps_set_simple (caps, "layer", G_TYPE_INT, 2, NULL);
       break;
     case GST_MPEGTS_STREAM_TYPE_PRIVATE_PES_PACKETS:
@@ -1195,10 +1197,11 @@ create_pad_for_stream (MpegTSBase * base, MpegTSBaseStream * bstream,
               "stream-format", G_TYPE_STRING, "byte-stream",
               "alignment", G_TYPE_STRING, "nal", NULL);
           break;
-        case DRF_ID_KLVA:
+        case GST_MPEGTS_MAKE_REGISTRATION_FOURCC ('K', 'L', 'V', 'A'):
           sparse = TRUE;
           is_private = TRUE;
-          caps = gst_caps_new_simple ("meta/x-klv",
+          caps = gst_caps_new_simple ("application/x-metadata",
+              "format_identifier", G_TYPE_STRING, "KLVA",
               "parsed", G_TYPE_BOOLEAN, TRUE, NULL);
           break;
       }
@@ -1265,14 +1268,15 @@ create_pad_for_stream (MpegTSBase * base, MpegTSBaseStream * bstream,
         caps = gst_caps_new_empty_simple ("video/x-dirac");
       }
       break;
-    case GST_MPEGTS_ATSC_STREAM_TYPE_VIDEO_EA:        /* Try to detect a VC1 stream */
+    case GST_MPEGTS_ATSC_STREAM_TYPE_VIDEO_EA: /* Try to detect a VC1 stream */
     {
       gboolean is_vc1 = FALSE;
 
       /* Note/FIXME: RP-227 specifies that the registration descriptor
        * for vc1 can also contain other information, such as profile,
        * level, alignment, buffer_size, .... */
-      if (bstream->registration_id == GST_MPEGTS_MAKE_REGISTRATION_FOURCC ('V', 'C', '-', '1'))
+      if (bstream->registration_id == GST_MPEGTS_MAKE_REGISTRATION_FOURCC ('V',
+              'C', '-', '1'))
         is_vc1 = TRUE;
       if (!is_vc1) {
         GST_WARNING ("0xea private stream type found but no descriptor "
@@ -1300,9 +1304,11 @@ create_pad_for_stream (MpegTSBase * base, MpegTSBaseStream * bstream,
        * OR program is ATSC (GA94)
        * OR stream registration is AC-3
        * then it's regular AC3 */
-      if (bstream->registration_id == GST_MPEGTS_MAKE_REGISTRATION_FOURCC ('A', 'C', '-', '3') ||
-          program->registration_id == GST_MPEGTS_MAKE_REGISTRATION_FOURCC ('G', 'A', '9', '4') ||
-          mpegts_get_descriptor_from_stream (bstream, GST_MTS_DESC_DVB_AC3)) {
+      if (bstream->registration_id == GST_MPEGTS_MAKE_REGISTRATION_FOURCC ('A',
+              'C', '-', '3')
+          || program->registration_id ==
+          GST_MPEGTS_MAKE_REGISTRATION_FOURCC ('G', 'A', '9', '4')
+          || mpegts_get_descriptor_from_stream (bstream, GST_MTS_DESC_DVB_AC3)) {
         is_audio = TRUE;
         caps = gst_caps_new_empty_simple ("audio/x-ac3");
         break;
